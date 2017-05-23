@@ -1,0 +1,23 @@
+widget = {
+  //runs when we receive data from the job
+  onData: function (el, data) {
+  console.log("wat");
+    //The parameters our job passed through are in the data object
+    //el is our widget element, so our actions should all be relative to that
+  if (data.title) {
+	  $('h2', el).text(data.title);
+    }
+    var waitTime = parseInt(data.response.longestholdtime);
+    if (waitTime < 60){
+      console.log("less than 60");
+      $('.content', el).html(data.response.longestholdtime);
+    } else {
+      var waitMins = String(Math.floor(waitTime / 60));
+      var waitSecs = String(waitTime % 60));
+      console.log("mins: " + waitMins);
+      console.log("secs: " + waitSecs);
+      if (waitSecs.length < 2) {waitSecs = "0" + waitSecs}
+      $('.content', el).html(waitMins + ":" + waitSecs);
+    }
+  }
+};
