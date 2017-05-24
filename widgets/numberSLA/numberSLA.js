@@ -7,7 +7,6 @@ widget = {
     if (data.title) {
       $('h2', el).text(data.title);
     }
-    console.log(response)
     var displayValue = Math.round((response.numCompleted+response.numAbandoned)*((100-response.serviceLevelPerf)/100)); //get the number of calls outside SLA
 
     $('.content', el).html(displayValue); //prints the table

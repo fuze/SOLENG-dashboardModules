@@ -27,7 +27,7 @@ widget = {
     function getAvailable(unpausedList) {
       var availableList = []
       for (i in unpausedList) {
-          if (unpausedList[i].status == 1){availableList.push(unpausedList[i]);
+          if (unpausedList[i].status == 1){availableList.push(unpausedList[i])};
       }
       return availableList
     }
