@@ -1,0 +1,52 @@
+{
+
+  "title": "Queue Status: sample",
+  "titleVisible": true,
+
+  "description": "A sample dashboard that shows the state of a queue and its agents",
+
+  "layout": {
+      "gridSize" : { "columns" : 13, "rows" : 16},
+      "customJS" : [],
+      "widgets" : [
+        {"row" : 1, "col" : 1, "width" : 2, "height" : 3, "widget" : "callsWaiting", "job" : "queueStatus", "config": ["common", "callsWaiting"]},
+        {"row" : 1, "col" : 3, "width" : 2, "height" : 3, "widget" : "averageHoldTime", "job" : "queueStatus", "config": ["common", "averageHoldTime"]},
+        {"row" : 1, "col" : 5, "width" : 2, "height" : 3, "widget" : "availableNumber", "job" : "queueStatus", "config": ["common", "available"]},
+        {"row" : 1, "col" : 7, "width" : 2, "height" : 3, "widget" : "callsCompleted", "job" : "queueStatus", "config": ["common", "callsCompleted"]},
+        {"row" : 1, "col" : 9, "width" : 2, "height" : 3, "widget" : "abandoned", "job" : "queueStatus", "config": ["common", "abandoned"]},
+        {"row" : 1, "col" : 11, "width" : 2 , "height" : 3, "widget" : "percentSLA", "job" : "queueStatus", "config" : ["common", "SLA"]},
+        {"row" : 3, "col" : 1, "width" : 12, "height" : 13, "widget" : "memberList", "job" : "queueStatusName", "config": ["common", "memberList"]}
+      ]
+  },
+
+  "config": {
+     "common": {
+       "interval" : 10000,
+       "queue" : "name-of-queue",
+       "tenant" : "tennent-code",
+       "username" : "portal-username",
+       "password" : "portal-password"
+     },
+     "callsWaiting" : {
+       "widgetTitle" : "Calls Waiting"
+     },
+     "averageHoldTime" : {
+       "widgetTitle" : "Average Hold Time"
+     },
+     "available" : {
+       "widgetTitle" : "Agents Available"
+     },
+     "callsCompleted" : {
+       "widgetTitle" : "Calls Completed"
+     },
+     "abandoned" : {
+       "widgetTitle" : "Abandoned"
+     },
+     "SLA" : {
+       "widgetTitle" : "SLA"
+     },
+     "memberList" : {
+       "widgetTitle" : "Agents"
+     }
+  }
+}
