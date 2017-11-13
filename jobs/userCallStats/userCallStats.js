@@ -84,11 +84,43 @@ module.exports = {
 
      */
 
+    if (!config.globalAuth || !config.globalAuth[authName] ||
+      !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+      throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+    }
+
+    let username = config.globalAuth[authName].username
+    let password = config.globalAuth[authName].password
+
+    getToken(username, password, (wardenToken) => {
+      getUserList(wardenToken, (userList) => {
+        getCallData(wardenToken, (callData) => {
+          try {
+            for (user in userList.users){
+              let userCalls = getUserCalls(userList.users[user].userId,callData.calls)
+              let thisUser = userList.users[user]
+              thisUser.totalCalls = userCalls.length
+              thisUser.totalTime = getTotalTime(userCalls)
+              if (thisUser.did){
+                thisUser.extension = thisUser.did.substring(thisUser.did.length-4, thisUser.did.length) //extract the extension
+              } else {
+                thisUser.extension = ""
+              }
+            }
+            console.log("executing callback. userList length: " + userList.users.length) 
+            jobCallback(null, {title: config.widgetTitle, response: userList, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending})
+          } catch (err) {
+            console.log(err)
+            jobCallback('Job did not complete successfully', null)
+          }
+        });
+      });
+    });
+
     function getToken(username, password, callback){
       try{
         const wardenAuth = require("./fuzeUtil/wardenNodeAuth.js").wardenAuth
         const appToken = "2.M9G01Num4hZ08KQ.YXBwbGljYXRpb246dmh5NE5MMUU4UToyMU5VUk5Cd2NQ"
-	console.log(`username: ${username}, password: ${password}`);
         wardenAuth(appToken, username, password, (response) => {
           let wardenToken = response.data.grant.token
 	  console.log(`Got a warden Token: ${wardenToken}`);
@@ -197,31 +229,6 @@ module.exports = {
       let calltime = Math.round((endTime - startTime) / 1000)
       return (calltime)  //returns call durration in seconds 
     }
-    
-      getToken(config.username, config.password, (wardenToken) => {
-        getUserList(wardenToken, (userList) => {
-          getCallData(wardenToken, (callData) => {
-            try {
-              for (user in userList.users){
-                let userCalls = getUserCalls(userList.users[user].userId,callData.calls)
-                let thisUser = userList.users[user]
-                thisUser.totalCalls = userCalls.length
-                thisUser.totalTime = getTotalTime(userCalls)
-                if (thisUser.did){
-                  thisUser.extension = thisUser.did.substring(thisUser.did.length-4, thisUser.did.length) //extract the extension
-                } else {
-                  thisUser.extension = ""
-                }
-              }
-              console.log("executing callback. userList length: " + userList.users.length) 
-              jobCallback(null, {title: config.widgetTitle, response: userList, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending})
-            } catch (err) {
-              console.log(err)
-              jobCallback('Job did not complete successfully', null)
-            }
-          });
-        });
-      });
 
   }
 };

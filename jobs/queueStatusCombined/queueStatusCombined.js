@@ -81,19 +81,32 @@ module.exports = {
      Using nodejs callback standard conventions, you should return an error or null (if success)
      as the first parameter, and the widget's data as the second parameter.
      */
-    var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
-    var responseList = []
-    for (var i=0 in config.queue) {
-      var options = {
-        url : baseURL.replace("$QUEUE", config.queue[i]),
-        headers : {"username" : config.username, "password" : config.password}
+    try {
+      if (!config.globalAuth || !config.globalAuth[authName] ||
+        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
       }
-      dependencies.easyRequest.JSON(options, function (err, response) {
-        responseList.push(response)
-        if (responseList.length == config.queue.length) { 
-          combineResponses(responseList)
+
+      let username = config.globalAuth[authName].username
+      let password = config.globalAuth[authName].password
+
+      var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
+      var responseList = []
+      for (var i=0 in config.queue) {
+        var options = {
+          url : baseURL.replace("$QUEUE", config.queue[i]),
+          headers : {"username" : username, "password" : password}
         }
-      });
+        dependencies.easyRequest.JSON(options, function (err, response) {
+          responseList.push(response)
+          if (responseList.length == config.queue.length) { 
+            combineResponses(responseList)
+          }
+        });
+      }
+    } catch (err){
+      console.log(err)
+      jobCallback(err, null)
     }
 
     function combineResponses (responseList) {

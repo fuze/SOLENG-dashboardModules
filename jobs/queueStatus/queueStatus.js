@@ -3,10 +3,11 @@
  *
  * Expected configuration:
  *
- * ## PLEASE ADD AN EXAMPLE CONFIGURATION FOR YOUR JOB HERE
  * { 
  *   myconfigKey : [ 
- *     { serverUrl : 'localhost' } 
+ *     { queue : 'queue-name',
+ *       tenant : 'tennent-code',
+ *       authName : 'credentials'}
  *   ]
  * }
  */
@@ -83,10 +84,18 @@ module.exports = {
 
      */
     try {
+      if (!config.globalAuth || !config.globalAuth[authName] ||
+        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+      }
+      
+      let username = config.globalAuth[authName].username
+      let password = config.globalAuth[authName].password
       let baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
+
       var options = {
         url : baseURL.replace("$QUEUE", config.queue),
-        headers : {"username" : config.username, "password" : config.password}
+        headers : {"username" : username, "password" : password}
       }
       dependencies.easyRequest.JSON(options, function (err, response) {
         jobCallback(err, {title: config.widgetTitle, response: response, threshold: config.threshold});

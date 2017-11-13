@@ -82,14 +82,29 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-    baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
-    var options = {
-      url : baseURL.replace("$QUEUE", config.queue),
-      headers : {"username" : config.username, "password" : config.password}
+
+    try {
+      if (!config.globalAuth || !config.globalAuth[authName] ||
+        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+      }
+  
+      let username = config.globalAuth[authName].username
+      let password = config.globalAuth[authName].password
+  
+  
+      baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
+      var options = {
+        url : baseURL.replace("$QUEUE", config.queue),
+        headers : {"username" : username, "password" : password}
+      }
+      dependencies.easyRequest.JSON(options, function (err, response) {
+        console.log(response)
+        jobCallback(err, {title: config.widgetTitle, response: response, threshold: config.threshold});
+      });
+    } catch (err) {
+      console.log(err)
+      jobCallback(err,null)
     }
-    dependencies.easyRequest.JSON(options, function (err, response) {
-      console.log(response)
-      jobCallback(err, {title: config.widgetTitle, response: response, threshold: config.threshold});
-    });
   }
 };

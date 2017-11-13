@@ -83,12 +83,20 @@ module.exports = {
 
      */
     try{
+      if (!config.globalAuth || !config.globalAuth[authName] ||
+        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+      }
+
+      let username = config.globalAuth[authName].username
+      let password = config.globalAuth[authName].password
+
       const getPeerOwner = require("./fuzeUtil/peerOwner.js").getPeerOwner
 
       baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
       var options = {
         url : baseURL.replace("$QUEUE", config.queue),
-        headers : {"username" : config.username, "password" : config.password}
+        headers : {"username" : username, "password" : password}
       }
       dependencies.easyRequest.JSON(options, function (err, response) {
         if (!err){
