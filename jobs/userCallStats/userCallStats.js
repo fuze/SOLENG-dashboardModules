@@ -83,7 +83,7 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-
+    let authName = config.authName
     if (!config.globalAuth || !config.globalAuth[authName] ||
       !config.globalAuth[authName].username || !config.globalAuth[authName].password){
       throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
@@ -111,7 +111,7 @@ module.exports = {
             jobCallback(null, {title: config.widgetTitle, response: userList, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending})
           } catch (err) {
             console.log(err)
-            jobCallback('Job did not complete successfully', null)
+            jobCallback(err, null)
           }
         });
       });

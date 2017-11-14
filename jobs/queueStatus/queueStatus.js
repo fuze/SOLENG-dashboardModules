@@ -84,6 +84,7 @@ module.exports = {
 
      */
     try {
+      let authName = config.authName
       if (!config.globalAuth || !config.globalAuth[authName] ||
         !config.globalAuth[authName].username || !config.globalAuth[authName].password){
         throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
