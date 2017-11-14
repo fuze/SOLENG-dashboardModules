@@ -106,8 +106,8 @@ module.exports = {
             peerList.push(response.members[i].name)
           }
           credentials = {
-            user: config.username,
-            pass: config.password,
+            user: username,
+            pass: password,
             tenant: config.tenant
           }
           if (peerList.length > 0){
