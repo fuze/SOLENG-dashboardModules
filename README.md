@@ -72,3 +72,48 @@ threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
 ```
 
+### Calls Completed
+Shows the number of calls that have been answered by agents in a queue or group of queues.
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Calls Waiting
+Shows the number of calls that are currently waiting to be answered in a queue or group of queues.
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Logged In Number
+Shows the number of agents that are currently logged into a queue or group of queues regardless of status (paused, on call, etc).
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
