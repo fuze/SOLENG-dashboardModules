@@ -4,7 +4,7 @@
 
 ### Prerequisites:
 - Git
-- [Node/NPM]https://nodejs.org/en/download/
+- [Node/NPM](https://nodejs.org/en/download/)
 ### Install Atlasboard
 ```
 #Install atlasboard:
