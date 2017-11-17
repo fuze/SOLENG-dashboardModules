@@ -46,8 +46,8 @@ Below is a list of the existing widgets for the Atlasboard wallboard system that
 Shows the number of abandoned calls in a queue or group of queues for the day (same value as in TCC). If a threshold has been set, the background of the widget turns red if the number of abandoned calls exceeds the threshold.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -61,8 +61,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the average hold time for a queue or group of queues. Time is displayed in seconds, or minutes and seconds (if over 60). If a threshold has been set, the background of the widget turns red if the average hold time in seconds exceeds the threshold.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -76,8 +76,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the number of calls that have been answered by agents in a queue or group of queues.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -91,8 +91,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the number of calls that are currently waiting to be answered in a queue or group of queues.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -106,8 +106,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the number of agents that are currently logged into a queue or group of queues regardless of status (paused, on call, etc).
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -121,8 +121,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the number of agents who are logged into a queue or group of queues that are paused.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -136,8 +136,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the number of available (unpaused, not-on-call) agents in a queue or group of queues. If a threshold has been set, the background of the widget turns red if the number of available agents falls below the threshold.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -151,10 +151,10 @@ widgetTitle: Title to display in the widget (optional)
 Shows a list of agents logged into a queue, their name, status, and number of calls taken across all queues. 
 
 #### Associated job:
-queueStatusName
+- queueStatusName
 
 #### Special User Permissions required:
-UC Health
+- UC Health
 
 #### Config:
 ```
@@ -168,8 +168,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the number of calls that met the queue or group of queue’s SLA guidelines
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -183,8 +183,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the percent of calls in a queue or group of queue’s that meet the defined SLA guidelines. If a threshold has been set, the background of the widget turns red if the SLA percent falls below the threshold.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
@@ -198,8 +198,8 @@ widgetTitle: Title to display in the widget (optional)
 Shows the highest current hold time for a queue or group of queues. Time is displayed in seconds, or minutes and seconds (if over 60). If widget has a threshold set, background of widget turns red when the wait time in seconds exceeds the threshold.
 
 #### Associated job:
-queueSummary
-queueSummaryCombined
+- queueSummary
+- queueSummaryCombined
 
 #### Config:
 ```
@@ -213,8 +213,8 @@ widgetTitle: Title to display in the widget (optional)
 A visual representation of availability and demand in a queue using bar charts.
 
 #### Associated job:
-queueStatus
-queueStatusCombined
+- queueStatus
+- queueStatusCombined
 
 #### Config:
 ```
