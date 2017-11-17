@@ -4,7 +4,7 @@
 
 ### Prerequisites:
 - Git
-- Node/NPM
+- [Node/NPM]https://nodejs.org/en/download/
 ### Install Atlasboard
 ```
 #Install atlasboard:
@@ -30,6 +30,8 @@ Create an authentication file globalAuth.json in the root of the wallboard direc
   }
 }
 ```
+
+For more information about the globalAuth file see [this section](https://bitbucket.org/atlassian/atlasboard/wiki/Atlasboard%20Authentication) of the Atlasboard documentation.
 
 ### Start Atlasboard
 ```
