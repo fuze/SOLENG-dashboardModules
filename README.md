@@ -117,3 +117,108 @@ threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
 ```
 
+### Paused Number
+Shows the number of agents who are logged into a queue or group of queues that are paused.
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Available Number
+Shows the number of available (unpaused, not-on-call) agents in a queue or group of queues. If a threshold has been set, the background of the widget turns red if the number of available agents falls below the threshold.
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Member List
+Shows a list of agents logged into a queue, their name, status, and number of calls taken across all queues. 
+
+#### Associated job:
+queueStatusName
+
+#### Special User Permissions required:
+UC Health
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Number SLA
+Shows the number of calls that met the queue or group of queue’s SLA guidelines
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Percent SLA
+Shows the percent of calls in a queue or group of queue’s that meet the defined SLA guidelines. If a threshold has been set, the background of the widget turns red if the SLA percent falls below the threshold.
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Wait Time
+Shows the highest current hold time for a queue or group of queues. Time is displayed in seconds, or minutes and seconds (if over 60). If widget has a threshold set, background of widget turns red when the wait time in seconds exceeds the threshold.
+
+#### Associated job:
+queueSummary
+queueSummaryCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Queue Status Visual
+A visual representation of availability and demand in a queue using bar charts.
+
+#### Associated job:
+queueStatus
+queueStatusCombined
+
+#### Config:
+```
+queue: key of the queue or queues you would like to monitor
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+widgetTitle: Title to display in the widget (optional)
+```
