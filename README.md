@@ -161,6 +161,7 @@ Shows a list of agents logged into a queue, their name, status, and number of ca
 #### Config:
 ```
 queue: key of the queue or queues you would like to monitor
+tenant: customer code in Portal
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -224,3 +225,19 @@ queue: key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 widgetTitle: Title to display in the widget (optional)
 ```
+
+### Queue Calls:
+Displays the number of calls that have entered a queue within a given time range.
+
+#### Associated job:
+- queueData
+
+#### Config:
+```
+queue: key of the queue you would like to monitor. If none is supplied, defaults to all (optional)
+tenant: customer code in Portal
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+timeRange: allowed values are 'day', 'week', 'month', '7d', or '30d'. Defaults to 'day' (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
