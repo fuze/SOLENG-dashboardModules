@@ -4,9 +4,9 @@
  * Expected configuration:
  *
  * ## PLEASE ADD AN EXAMPLE CONFIGURATION FOR YOUR JOB HERE
- * { 
- *   myconfigKey : [ 
- *     { serverUrl : 'localhost' } 
+ * {
+ *   myconfigKey : [
+ *     { serverUrl : 'localhost' }
  *   ]
  * }
  */
@@ -88,7 +88,7 @@ module.exports = {
         !config.globalAuth[authName].username || !config.globalAuth[authName].password){
         throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
       }
-  
+
       let username = config.globalAuth[authName].username
       let password = config.globalAuth[authName].password
       var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
@@ -125,7 +125,7 @@ module.exports = {
               combinedResponse.longestholdtime = responseList[i].longestholdtime
             }
           }
-          jobCallback(null, {title: config.widgetTitle, response: combinedResponse, threshold: config.threshold});
+          jobCallback(null, {title: config.widgetTitle, queue: config.queue, response: combinedResponse, threshold: config.threshold});
         } catch (err){
           console.log(err)
           jobCallback(err,null)
