@@ -1,6 +1,10 @@
 widget = {
   //runs when we receive data from the job
   onData: function (el, data) {
+    $("a[href^='https://data.fuze.com/queues/']").each(function() {
+      this.href = 'https://data.fuze.com/queues/' + data.queue + '?after=now-0d&before=now';
+    })
+
   var waitTime = parseInt(data.response.longestholdtime)
     //The parameters our job passed through are in the data object
     //el is our widget element, so our actions should all be relative to that
@@ -45,7 +49,7 @@ widget = {
       } else {
         waitMins = Math.floor(time / 60); //get the minutes
         waitSecs = String((time % 60));  //get seconds
-        if (waitSecs.length < 2) {waitSecs = "0" + waitSecs} //if we have a single digit number of seconds, pad the front with a "0" 
+        if (waitSecs.length < 2) {waitSecs = "0" + waitSecs} //if we have a single digit number of seconds, pad the front with a "0"
         result = waitMins + ":" + waitSecs;
       }
       callback(result,time);

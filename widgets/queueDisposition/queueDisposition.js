@@ -1,40 +1,61 @@
 widget = {
   //runs when we receive data from the job
   onData: function (el, data) {
+    $("a[href^='https://data.fuze.com/queues/']").each(function() {
+      this.href = 'https://data.fuze.com/queues/' + data.queue + '?after=now-0d&before=now';
+    })
+
+    //console.log(data)
     var response = data.response //gets response from the job
     //The parameters our job passed through are in the data object
     //el is our widget element, so our actions should all be relative to that
     if (data.title) {
       $('h2', el).text(data.title);
     }
-    let totalCalls = response.queueCalls.length
-    let abandonedCalls = filterCalls("Abandon", response.queueCalls)
-    let completeCalls = filterCalls("Complete", response.queueCalls)
-    let exitEmptyCalls = filterCalls("ExitEmpty", response.queueCalls)
-    let timeoutCalls = filterCalls("ExitWithTimeout", response.queueCalls)
 
-    let table = "<table class=\"queueDisposition\" border=\"0\" cellpadding=\"3\" width=\"100%\">"
-    table += "<tr class=\"Heading\">"
-    table += "<td><div align=\"left\">Connected</div></td><td><div align=\"left\">Timeout</div></td><td><div align=\"left\">Abandoned</div></td><td><div align=\"left\">Empty</div></td>"
-    table += "</tr>"
-    table += "<tr class=\"Data\">"
-    table += "<td><div align=\"left\">" + getValuePair(completeCalls.length,totalCalls) + "</div></td><td><div align=\"left\">" + getValuePair(timeoutCalls.length,totalCalls) + "</div></td><td><div align=\"left\">" + getValuePair(abandonedCalls.length,totalCalls) + "</div></td><td><div align=\"left\">" + getValuePair(exitEmptyCalls.length,totalCalls) + "</div></td>"
-    table += "</table>"
+    let thisVariable = 0;
+    //console.log('variable: ' + data.variable);
+    switch(data.variable) {
+      case 'totalCalls':
+        thisVariable = response.queueCalls.length
+        break;
+      case 'abandon':
+        thisVariable = filterCalls("Abandon", response.queueCalls).length
+        break;
+      case 'complete':
+        thisVariable = filterCalls("Complete", response.queueCalls).length
+        break;
+      case 'exitEmpty':
+        thisVariable = filterCalls("ExitEmpty", response.queueCalls).length
+        break;
+      case 'exitTimeout':
+        thisVariable = filterCalls("ExitWithTimeout", response.queueCalls).length
+        break;
+      case 'optOut':
+        thisVariable = filterCalls("OptOut", response.queueCalls).length
+        break;
+      case 'Transfer':
+        thisVariable = filterCalls("Transfer", response.queueCalls).length
+        break;
+      default:
+        thisVariable = 'Undefined'
+    }
 
-    
-    var displayValue = table
-
+    var displayValue = thisVariable
 
     $('.content', el).html(displayValue); //prints the value
+    function updateUrl(){
+
+    }
 
     function filterCalls(disposition, calls){
       return calls.filter(function(thisCall){
         return (thisCall.disposition == disposition)
       })
     }
- 
+
     function getValuePair (value,total){
-    
+
       return ("" + value + " | " + Math.round(value/total*100) + "%")
     }
   }

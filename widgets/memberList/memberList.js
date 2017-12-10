@@ -1,6 +1,10 @@
 widget = {
   //runs when we receive data from the job
   onData: function (el, data) {
+    $("a[href^='https://data.fuze.com/queues/']").each(function() {
+      this.href = 'https://data.fuze.com/queues/' + data.queue + '?after=now-0d&before=now';
+    })
+
     var response = data.response //gets response from the job
     //The parameters our job passed through are in the data object
     //el is our widget element, so our actions should all be relative to that
@@ -8,7 +12,7 @@ widget = {
       $('h2', el).text(data.title);
     }
     var signedInList = response.members;
-    console.log(response)
+    // console.log(response)
 
     getUnpaused(signedInList, function (unpausedList){
       var availableList = []
@@ -34,7 +38,7 @@ widget = {
     function translateStatus(value){
       var result
       if (value == 1){result = "Available"}
-      else if (value == 2){result = "In Use"}
+      else if (value == 2){result = "On a Call"}
       else if (value == 3){result = "Busy"}
       else if (value == 4){result = "Invaild"}
       else if (value == 5){result = "Unavailable"}
@@ -49,9 +53,10 @@ widget = {
       for (row in values) {
         var memberStatus = values[row][1]
         var pausedStatus = values[row][2]
-        if (memberStatus == "In Use"){table += "<tr class=\"inUse\">"}
+        if (memberStatus == "On a Call"){table += "<tr class=\"inUse\">"}
         else if (memberStatus == "Paused"){table += "<tr class=\"paused\">"}
         else if (memberStatus == "Available"){table += "<tr class=\"available\">"}
+        else if (memberStatus == "Ringing"){table += "<tr class=\"ringing\">"}
         else {table += "<tr>"}
 
         for (column in values[row]) {
@@ -71,6 +76,6 @@ widget = {
       }
     return getAvailable(unpaused)
     }
-    
+
   }
 };

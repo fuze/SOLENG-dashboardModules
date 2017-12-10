@@ -1,6 +1,10 @@
 widget = {
   //runs when we receive data from the job
   onData: function (el, data) {
+    $("a[href^='https://data.fuze.com/queues/']").each(function() {
+      this.href = 'https://data.fuze.com/queues/' + data.queue + '?after=now-0d&before=now';
+    })
+
     var response = data.response //gets response from the job
     //The parameters our job passed through are in the data object
     //el is our widget element, so our actions should all be relative to that
@@ -11,6 +15,7 @@ widget = {
 
     $('.content', el).html(makeProgressTable(getAgentLists(signedInList))); //prints the table
 
+
     function makeProgressTable(agents){
       var maxValue = Math.max(agents.total, response.callsWaiting) //the scale of the bar graph should be the number of signed in agents or the number of calls waiting, whichever is larger
 
@@ -19,6 +24,7 @@ widget = {
       dependencies += "<script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>\n"
 
       var table = dependencies + ""
+      table +=  "<div class=\"content\">Agent Availability</div>"
       table += "<div class=\"progress\">\n"
       var label = ""
       var percent
@@ -39,6 +45,7 @@ widget = {
       }
       table += "</div>"
 
+      table +=  "<div class=\"content\">Calls Waiting</div>"
       table += "<div class=\"progress\">\n"
       if (response.callsWaiting){
         percent = response.callsWaiting/maxValue*100
@@ -64,7 +71,7 @@ widget = {
           agents.paused.push(signedIn[i])
         } else if (signedIn[i].status == 1){ //status 1 is "Device is not used" aka available (this check means weird device states like 'invaid' and 'ringing' are not included)
           agents.available.push(signedIn[i])
-        } else { 
+        } else {
           agents.other.push(signedIn[i])
         }
       }
