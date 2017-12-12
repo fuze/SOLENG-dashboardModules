@@ -128,7 +128,7 @@ module.exports = {
           throw 'Error: no warden token'
         }
         let usersEndpointURL = "https://rest.data.fuze.com/users"
-        if (typeof config.direction != 'undefined'){
+        if (typeof config.department != 'undefined'){
           usersEndpointURL += "?dept=" + config.department
         }
         let options = {
@@ -160,7 +160,7 @@ module.exports = {
         if (!storedResults){var storedResults=[]}
         let startTime = getStartTime(config.timeRange)
         let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max
-        if (typeof config.direction != 'undefined'){
+        if (typeof config.department != 'undefined'){
           endpointURL += "&dept=" + config.department
         }
         if (first){
