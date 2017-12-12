@@ -3,8 +3,8 @@
  *
  * Expected configuration:
  *
- * { 
- *   myconfigKey : [ 
+ * {
+ *   myconfigKey : [
  *     { queue : 'queue-name',
  *       tenant : 'tennent-code',
  *       authName : 'credentials'}
@@ -39,7 +39,6 @@ module.exports = {
    * @param jobCallback
    */
   onRun: function (config, dependencies, jobCallback) {
-
     /*
      1. USE OF JOB DEPENDENCIES
 
@@ -83,27 +82,75 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-    try {
-      let authName = config.authName
-      if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
-        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
-      }
-      
-      let username = config.globalAuth[authName].username
-      let password = config.globalAuth[authName].password
-      let baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
+     /*
+    console.log(config.widgetTitle);
+     if(global.MikesTest === undefined) {
+       console.log('no global...')
+       global.MikesTest = 'Global variable available.'
+     } else {
+       console.log(global.MikesTest)
+     }
+     */
 
-      var options = {
-        url : baseURL.replace("$QUEUE", config.queue),
-        headers : {"username" : username, "password" : password}
+    /* See if this is the first time */
+    let path = require('path');
+    let jobName      = path.basename(__filename);
+    let widgetTitle  = config.widgetTitle;
+    let thisVariable = config.variable;
+    let queueName    = config.queue;
+    let tenant       = config.tenant;
+    let fullResponse = {};
+
+    fullResponse.title     = config.widgetTitle;
+    fullResponse.variable  = config.variable;
+    fullResponse.queue     = config.queue;
+    fullResponse.response  = {};
+    fullResponse.threshold = config.threshold;
+
+    if(global.wallboardJobs === undefined) { global.wallboardJobs = {}; } // init global.wallboardJobs
+    if(global.wallboardJobs[tenant] === undefined) { global.wallboardJobs[tenant] = {}; }
+    if(global.wallboardJobs[tenant][queueName] === undefined) { global.wallboardJobs[tenant][queueName] = {}; }
+
+    if(global.wallboardJobs[tenant][queueName][jobName] === undefined){
+      global.wallboardJobs[tenant][queueName][jobName] = {};
+      global.wallboardJobs[tenant][queueName][jobName].firstWidget = widgetTitle;
+      global.wallboardJobs[tenant][queueName][jobName].response = {};
+    } //  Initing done
+
+   let firstWidget = global.wallboardJobs[tenant][queueName][jobName].firstWidget;
+
+   if(widgetTitle != global.wallboardJobs[tenant][queueName][jobName].firstWidget) {
+     fullResponse.response = global.wallboardJobs[tenant][queueName][jobName].response;
+     jobCallback(null, fullResponse);
+    } else {
+      //console.log(`*** Need to get new data.`)
+      try {
+        let authName = config.authName
+        if (!config.globalAuth || !config.globalAuth[authName] ||
+          !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+          throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+        }
+
+        let username = config.globalAuth[authName].username
+        let password = config.globalAuth[authName].password
+        let baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
+
+        var options = {
+          url : baseURL.replace("$QUEUE", config.queue),
+          headers : {"username" : username, "password" : password}
+        }
+        dependencies.easyRequest.JSON(options, function (err, response) {
+          //global.wallboardJobs[jobName].response = response;
+          //jobCallback(err, {title: config.widgetTitle, queue: config.queue, response: response, threshold: config.threshold});
+          global.wallboardJobs[tenant][queueName][jobName].response = {}
+          global.wallboardJobs[tenant][queueName][jobName].response = response;
+          fullResponse.response = response;
+          jobCallback(null, fullResponse);
+        });
+      } catch(err) {
+        console.log(err)
+        jobCallback(err, null)
       }
-      dependencies.easyRequest.JSON(options, function (err, response) {
-        jobCallback(err, {title: config.widgetTitle, response: response, threshold: config.threshold});
-      });
-    } catch(err) {
-      console.log(err)
-      jobCallback(err, null)
     }
   }
 };

@@ -4,9 +4,9 @@
  * Expected configuration:
  *
  * ## PLEASE ADD AN EXAMPLE CONFIGURATION FOR YOUR JOB HERE
- * { 
- *   myconfigKey : [ 
- *     { serverUrl : 'localhost' } 
+ * {
+ *   myconfigKey : [
+ *     { serverUrl : 'localhost' }
  *   ]
  * }
  */
@@ -81,33 +81,66 @@ module.exports = {
      Using nodejs callback standard conventions, you should return an error or null (if success)
      as the first parameter, and the widget's data as the second parameter.
      */
-    try {
-      let authName = config.authName
-      if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
-        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
-      }
 
-      let username = config.globalAuth[authName].username
-      let password = config.globalAuth[authName].password
+     /* See if this is the first time */
+     let path = require('path');
+     let jobName      = path.basename(__filename);
+     let widgetTitle  = config.widgetTitle;
+     let thisVariable = config.variable;
+     let queueName    = config.queue;
+     let tenant       = config.tenant;
+     let fullResponse = {};
 
-      var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
-      var responseList = []
-      for (var i=0 in config.queue) {
-        var options = {
-          url : baseURL.replace("$QUEUE", config.queue[i]),
-          headers : {"username" : username, "password" : password}
+     fullResponse.title     = config.widgetTitle;
+     fullResponse.variable  = config.variable;
+     fullResponse.queue     = config.queue;
+     fullResponse.response  = {};
+     fullResponse.threshold = config.threshold;
+
+     if(global.wallboardJobs === undefined) { global.wallboardJobs = {}; } // init global.wallboardJobs
+     if(global.wallboardJobs[tenant] === undefined) { global.wallboardJobs[tenant] = {}; }
+     if(global.wallboardJobs[tenant][queueName] === undefined) { global.wallboardJobs[tenant][queueName] = {}; }
+
+     if(global.wallboardJobs[tenant][queueName][jobName] === undefined){
+       global.wallboardJobs[tenant][queueName][jobName] = {};
+       global.wallboardJobs[tenant][queueName][jobName].firstWidget = widgetTitle;
+       global.wallboardJobs[tenant][queueName][jobName].response = {};
+     } //  Initing done
+
+    let firstWidget = global.wallboardJobs[tenant][queueName][jobName].firstWidget;
+
+    if(widgetTitle != global.wallboardJobs[tenant][queueName][jobName].firstWidget) {
+      fullResponse.response = global.wallboardJobs[tenant][queueName][jobName].response;
+      jobCallback(null, fullResponse);
+     } else {
+      try {
+        let authName = config.authName
+        if (!config.globalAuth || !config.globalAuth[authName] ||
+          !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+          throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
         }
-        dependencies.easyRequest.JSON(options, function (err, response) {
-          responseList.push(response)
-          if (responseList.length == config.queue.length) { 
-            combineResponses(responseList)
+
+        let username = config.globalAuth[authName].username
+        let password = config.globalAuth[authName].password
+
+        var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
+        var responseList = []
+        for (var i=0 in config.queue) {
+          var options = {
+            url : baseURL.replace("$QUEUE", config.queue[i]),
+            headers : {"username" : username, "password" : password}
           }
-        });
+          dependencies.easyRequest.JSON(options, function (err, response) {
+            responseList.push(response)
+            if (responseList.length == config.queue.length) {
+              combineResponses(responseList, fullResponse);
+            }
+          });
+        }
+      } catch (err){
+        console.log(err)
+        jobCallback(err, null)
       }
-    } catch (err){
-      console.log(err)
-      jobCallback(err, null)
     }
 
     function combineResponses (responseList) {
@@ -119,25 +152,30 @@ module.exports = {
         combinedResponse.serviceLevelPerf = 0
         var maxWaitingArray = []
         var memberList = []
-  
+
         for (var i=0; i<responseList.length; i++) {
           combinedResponse.callsWaiting += responseList[i].callsWaiting //get sum values
           combinedResponse.numAbandoned += responseList[i].numAbandoned
           combinedResponse.numCompleted += responseList[i].numCompleted
-  
+
           combinedResponse.serviceLevelPerf += (responseList[i].numCompleted * responseList[i].serviceLevelPerf) //do weighted averages
           combinedResponse.avgHoldTime += (responseList[i].numCompleted * responseList[i].avgHoldTime)
-  
+
           maxWaitingArray.push(responseList[i].maxWaiting)
           memberList.push(responseList[i].members)
         }
-        combinedResponse.serviceLevelPerf = (combinedResponse.serviceLevelPerf/combinedResponse.numCompleted) 
+        combinedResponse.serviceLevelPerf = (combinedResponse.serviceLevelPerf/combinedResponse.numCompleted)
         combinedResponse.avgHoldTime = (combinedResponse.avgHoldTime/combinedResponse.numCompleted)
         combinedResponse.maxWaiting = Math.max.apply(null, maxWaitingArray) //get largest value in array
-  
+
         combinedResponse.members = combineMembers(memberList) //combine the queue memeber lists
-  
-        jobCallback(null, {title: config.widgetTitle, response: combinedResponse, threshold: config.threshold}); //send response to widget
+
+
+        global.wallboardJobs[tenant][queueName][jobName].response = {}
+        global.wallboardJobs[tenant][queueName][jobName].response = response;
+        fullResponse.response = response;
+        jobCallback(null, fullResponse);
+        //jobCallback(null, {title: config.widgetTitle, response: combinedResponse, threshold: config.threshold}); //send response to widget
       }catch(err){
         console.log(err)
         jobCallback(err, null)

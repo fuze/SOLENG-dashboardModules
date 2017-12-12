@@ -4,9 +4,9 @@
  * Expected configuration:
  *
  * ## PLEASE ADD AN EXAMPLE CONFIGURATION FOR YOUR JOB HERE
- * { 
- *   myconfigKey : [ 
- *     { serverUrl : 'localhost' } 
+ * {
+ *   myconfigKey : [
+ *     { serverUrl : 'localhost' }
  *   ]
  * }
  */
@@ -83,29 +83,62 @@ module.exports = {
 
      */
 
-    try {
-      let authName = config.authName
-      if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
-        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+     /* See if this is the first time */
+     let path = require('path');
+     let jobName      = path.basename(__filename);
+     let widgetTitle  = config.widgetTitle;
+     let thisVariable = config.variable;
+     let queueName    = config.queue;
+     let tenant       = config.tenant;
+     let fullResponse = {};
+
+     fullResponse.title     = config.widgetTitle;
+     fullResponse.variable  = config.variable;
+     fullResponse.queue     = config.queue;
+     fullResponse.response  = {};
+     fullResponse.threshold = config.threshold;
+
+     if(global.wallboardJobs === undefined) { global.wallboardJobs = {}; } // init global.wallboardJobs
+     if(global.wallboardJobs[tenant] === undefined) { global.wallboardJobs[tenant] = {}; }
+     if(global.wallboardJobs[tenant][queueName] === undefined) { global.wallboardJobs[tenant][queueName] = {}; }
+
+     if(global.wallboardJobs[tenant][queueName][jobName] === undefined){
+       global.wallboardJobs[tenant][queueName][jobName] = {};
+       global.wallboardJobs[tenant][queueName][jobName].firstWidget = widgetTitle;
+       global.wallboardJobs[tenant][queueName][jobName].response = {};
+     } //  Initing done
+
+    let firstWidget = global.wallboardJobs[tenant][queueName][jobName].firstWidget;
+
+    if(widgetTitle != global.wallboardJobs[tenant][queueName][jobName].firstWidget) {
+      fullResponse.response = global.wallboardJobs[tenant][queueName][jobName].response;
+      jobCallback(null, fullResponse);
+     } else {
+      try {
+        let authName = config.authName
+        if (!config.globalAuth || !config.globalAuth[authName] ||
+          !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+          throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+        }
+
+        let username = config.globalAuth[authName].username
+        let password = config.globalAuth[authName].password
+
+        baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
+        var options = {
+          url : baseURL.replace("$QUEUE", config.queue),
+          headers : {"username" : username, "password" : password}
+        }
+        dependencies.easyRequest.JSON(options, function (err, response) {
+          global.wallboardJobs[tenant][queueName][jobName].response = {}
+          global.wallboardJobs[tenant][queueName][jobName].response = response;
+          fullResponse.response = response;
+          jobCallback(null, fullResponse);
+        });
+      } catch (err) {
+        console.log(err)
+        jobCallback(err,null)
       }
-  
-      let username = config.globalAuth[authName].username
-      let password = config.globalAuth[authName].password
-  
-  
-      baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
-      var options = {
-        url : baseURL.replace("$QUEUE", config.queue),
-        headers : {"username" : username, "password" : password}
-      }
-      dependencies.easyRequest.JSON(options, function (err, response) {
-        console.log(response)
-        jobCallback(err, {title: config.widgetTitle, response: response, threshold: config.threshold});
-      });
-    } catch (err) {
-      console.log(err)
-      jobCallback(err,null)
     }
   }
 };
