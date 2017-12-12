@@ -47,7 +47,7 @@ widget = {
     
     function getMetadata(userCalls){
       userCalls.totalCalls = userCalls.calls.length
-      userCalls.averageTalkTime = formatTime(getAverageTalkTime(userCalls.calls))
+      userCalls.averageTalkTime = getAverageTalkTime(userCalls.calls)
       userCalls.inbound = userCalls.calls.filter(function(call){return(call.direction == "Inbound")}).length
       userCalls.outbound = userCalls.calls.filter(function(call){return(call.direction == "Outbound")}).length
       userCalls.internal = userCalls.calls.filter(function(call){return(call.direction == "Internal")}).length
@@ -149,7 +149,7 @@ widget = {
         table += addTableData(values[i].outbound)
         table += addTableData(values[i].internal)
         table += addTableData(values[i].platform)
-        table += addTableData(values[i].averageTalkTime)
+        table += addTableData(formatTime(values[i].averageTalkTime))
         table += "</tr>";
       }
       table += "</table>";
