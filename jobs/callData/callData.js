@@ -96,19 +96,10 @@ module.exports = {
       getUserList(wardenToken, (userList) => {
         getCallData(wardenToken, (callData) => {
           try {
-            for (user in userList.users){
-              let userCalls = getUserCalls(userList.users[user].userId,callData.calls)
-              let thisUser = userList.users[user]
-              thisUser.totalCalls = userCalls.length
-              thisUser.totalTime = getTotalTime(userCalls)
-              if (thisUser.did){
-                thisUser.extension = thisUser.did.substring(thisUser.did.length-4, thisUser.did.length) //extract the extension
-              } else {
-                thisUser.extension = ""
-              }
+            for (call in callData.calls){
+              addNameToCall(callData.calls[call],userList.users)
             }
-            console.log("executing callback. userList length: " + userList.users.length) 
-            jobCallback(null, {title: config.widgetTitle, response: userList, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending})
+            jobCallback(null, {title: config.widgetTitle, response: callData, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending})
           } catch (err) {
             console.log(err)
             jobCallback(err, null)
@@ -123,7 +114,6 @@ module.exports = {
         const appToken = "2.M9G01Num4hZ08KQ.YXBwbGljYXRpb246dmh5NE5MMUU4UToyMU5VUk5Cd2NQ"
         wardenAuth(appToken, username, password, (response) => {
           let wardenToken = response.data.grant.token
-	  console.log(`Got a warden Token: ${wardenToken}`);
           callback(wardenToken)
         });
       } catch(err) {
@@ -137,7 +127,10 @@ module.exports = {
         if (!wardenToken){
           throw 'Error: no warden token'
         }
-        const usersEndpointURL = "https://rest.data.fuze.com/users"
+        let usersEndpointURL = "https://rest.data.fuze.com/users"
+        if (typeof config.direction != 'undefined'){
+          usersEndpointURL += "?dept=" + config.department
+        }
         let options = {
           url: usersEndpointURL,
           headers : {
@@ -165,13 +158,11 @@ module.exports = {
         }
         if (!max){var max=1000}
         if (!storedResults){var storedResults=[]}
-        let startTime = new Date()
-        startTime.setMinutes(0)
-        startTime.setHours(0)
-        startTime.setSeconds(0)
-        startTime.setMilliseconds(0)
-        startTime = startTime.toJSON() //startTime is the start of the current day
-        let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&dir=outbound&tk=" + config.tennant + "&limit=" + max
+        let startTime = getStartTime(config.timeRange)
+        let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max
+        if (typeof config.direction != 'undefined'){
+          endpointURL += "&dept=" + config.department
+        }
         if (first){
           endpointURL += "&first=" + first
         }
@@ -208,6 +199,54 @@ module.exports = {
       }
     }
 
+    function addNameToCall(call, listOfUsers){
+      if (typeof call.to.userId == 'string'){
+        let userObject = findUser(call.to.userId, listOfUsers)
+        if (typeof userObject != 'undefined'){
+          call.to.firstName = userObject.firstName
+          call.to.lastName = userObject.lastName
+        }
+      }
+      if (typeof call.from.userId == 'string'){
+        let userObject = findUser(call.from.userId, listOfUsers)
+        if (typeof userObject != 'undefined'){
+          call.from.firstName = userObject.firstName
+          call.from.lastName = userObject.lastName
+        }
+      }
+    }
+    
+    function findUser(userId, listOfUsers){
+      let userObject = listOfUsers.find(function(user){
+        return(user.userId == userId)
+      })
+      return(userObject)
+    }
+    
+    
+    
+    function getStartTime(range){
+      if (range != "day" && range != "week" && range != "month"){
+        throw "timeRange must either be 'day', 'week', 'month', '7d', or '30d'"
+      }
+      let startTime = new Date()
+      startTime.setMinutes(0)
+      startTime.setHours(0)
+      startTime.setSeconds(0)
+      startTime.setMilliseconds(0)
+      if (range == "week") {
+        startTime.setDate(startTime.getDate()-startTime.getDay())
+      } else if (range == "month"){
+        startTime.setDate(1)
+      } else if (range == "7d"){
+        startTime.setDate(startTime.getDate-7)
+      } else if (range == "30d"){
+        startTime.setDate(startTime.getDate-30)
+      }
+      
+      return (startTime.toJSON())
+    }
+    
     function getUserCalls(userId, callList){ //returns list of calls from that user
       result = callList.filter((call) => {
         if (call.from.userId == userId){return true}else{return false}
