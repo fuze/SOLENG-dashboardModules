@@ -51,7 +51,7 @@ function getPeerInfo (credentials, peer, callback) {
       });
       response.on('end', function(chunk) {
         response = JSON.parse(str)
-        if (response.peers){
+        if (response.peers && response.peers.user && response.peers.user.displayName){
           callback(response)
         } else {
           badResponse()
