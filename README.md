@@ -18,7 +18,7 @@ atlasboard new mywallboard
 #Install fuze atlasboard modules
 cd mywallboard
 git init
-git submodule add https://github.address.for.dashboard.modules/ packages/fuze
+git submodule add git@github.com:fuze/SOLENG-dashboardModules.git packages/fuze
 ```
 
 ### Configure the sample dashboard
