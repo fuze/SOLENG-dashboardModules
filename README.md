@@ -18,10 +18,22 @@ atlasboard new mywallboard
 #Install fuze atlasboard modules
 cd mywallboard
 git init
-git submodule add https://github.address.for.dashboard.modules/ packages/fuze
+git submodule add git@github.com:fuze/SOLENG-dashboardModules.git packages/fuze
 ```
 
-Create an authentication file globalAuth.json in the root of the wallboard directory. The included dashboards expect an authentication key with the name 'portalUser'.
+### Configure the sample dashboard
+To be able to use the sample dashboard that is included with this repository, the dashboard must be configured to work with your Fuze instance. Open the sample dashboard file inside of packages/fuze/dashboards that you wish to set up. In the 'config' section set the value of 'queue' and 'tenant' in 'common':
+```
+"common": {
+       "interval" : 10000,
+       "queue" : "name-of-queue",
+       "tenant" : "tennent-code",
+       "authName" : "portalUser"
+     }
+```
+In the included dashboards, the "common" config is used to set configuration values for multiple widgets, however Atlasboard dashboards can be set up so that each widget has a unique configuration configured seperatly. To learn more about the structure of the dashboard configuration file structure check out the "dashboards" section of the [Atlasboard documentation](https://bitbucket.org/atlassian/atlasboard/wiki/Dashboards).
+
+The sample dashboards use a global authentication file to segregate the login data from the configuration. Create an authentication file "globalAuth.json" in the root of the wallboard directory. The included dashboards expect an authentication key with the name 'portalUser'. Enter the Portal username and password of the user that should be used to query the APIs as shown.
 ```
 {
   "portalUser" : {
@@ -30,6 +42,10 @@ Create an authentication file globalAuth.json in the root of the wallboard direc
   }
 }
 ```
+It is recomended to create a utility account for the wallboard to use for the requests. The user must not be SSO authenticated, and must have the following permissions:
+* End-User Web Service Access
+* Reports, Analytics
+* Customer Health Access (Only required for some modules)
 
 For more information about the globalAuth file see [this section](https://bitbucket.org/atlassian/atlasboard/wiki/Atlasboard%20Authentication) of the Atlasboard documentation.
 
