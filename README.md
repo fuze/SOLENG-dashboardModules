@@ -27,7 +27,7 @@ To be able to use the sample dashboard that is included with this repository, th
 "common": {
        "interval" : 10000,
        "queue" : "name-of-queue",
-       "tenant" : "tennent-code",
+       "tenant" : "tenant-code",
        "authName" : "portalUser"
      }
 ```
