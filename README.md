@@ -258,7 +258,7 @@ widgetTitle: Title to display in the widget (optional)
 ```
 
 ### User Call Stats
-A scrolling list of users and their call statistics. This widget replicates the calls by user page in the data.fuze.com frontend
+A scrolling list of users and their call statistics. This widget replicates the calls by user page in the data.fuze.com frontend. This widget allows for the displayed columns to be customized.
 
 #### Associated job:
 - callData
@@ -269,7 +269,9 @@ tenant: customer code in Portal
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 timeRange: allowed values are 'day', 'week', 'month', '7d', or '30d'. Defaults to 'day' (optional)
 department: if supplied, limits results to users in the named department (optional)
-sortValue: the value to used to order the list. Allowed values are 'firstName', 'lastName', 'totalCalls', 'averageTalkTime', 'inbound', 'outbound', 'internal', and 'platform'
+displayColumns: Array of columns to display. Allowed values are 'totalCalls', 'totalTalkTime', 'averageTalkTime', 'inbound', 'outbound', 'internal', and 'platform'.
+       If no call directions are included in displayColumns, 'totalCalls', 'totalTalkTime', and 'averageTalkTime' will use all calls for this user, otherwise they will calculate the values based on the calls being displayed.
+sortValue: the value to used to order the list. Allowed values are 'firstName', 'lastName', 'totalCalls', 'totalTalkTime', 'averageTalkTime', 'inbound', 'outbound', 'internal', and 'platform'
 ascending: boolean that determines the direction of the sorting
 pageSize: the number of results to display at once
 ```
