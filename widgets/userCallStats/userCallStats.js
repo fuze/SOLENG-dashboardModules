@@ -52,7 +52,6 @@ widget = {
       }
     }
     
-<<<<<<< HEAD
     function getMetadata(userCalls, columns){
       let theseCalls
       
@@ -98,15 +97,6 @@ widget = {
         userCalls.totalCalls = userCalls.filteredCalls.length
       }
       
-=======
-    function getMetadata(userCalls){
-      userCalls.totalCalls = userCalls.calls.length
-      userCalls.averageTalkTime = getAverageTalkTime(userCalls.calls)
-      userCalls.inbound = userCalls.calls.filter(function(call){return(call.direction == "Inbound")}).length
-      userCalls.outbound = userCalls.calls.filter(function(call){return(call.direction == "Outbound")}).length
-      userCalls.internal = userCalls.calls.filter(function(call){return(call.direction == "Internal")}).length
-      userCalls.platform = userCalls.calls.filter(function(call){return(call.direction == "Platform")}).length
->>>>>>> origin/master
       return (userCalls)
     }
     
@@ -205,18 +195,9 @@ widget = {
       for (i in values) {
         table += "<tr>"
         table += addTableData(values[i].firstName + " " + values[i].lastName)
-<<<<<<< HEAD
         for (column of displayColumns){
           table += addTableData(values[i][column])
         }
-=======
-        table += addTableData(values[i].totalCalls)
-        table += addTableData(values[i].inbound)
-        table += addTableData(values[i].outbound)
-        table += addTableData(values[i].internal)
-        table += addTableData(values[i].platform)
-        table += addTableData(formatTime(values[i].averageTalkTime))
->>>>>>> origin/master
         table += "</tr>";
       }
       table += "</table>";
