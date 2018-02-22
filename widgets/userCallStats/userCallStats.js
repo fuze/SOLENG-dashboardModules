@@ -9,18 +9,25 @@ widget = {
     if (data.title) {
       $('h2', el).text(data.title);
     }
-    
+
+    let displayColumns = data.displayColumns
+    if (typeof data.displayColumns != 'undefined'){
+      displayColumns = data.displayColumns
+    }else{
+      displayColumns = ['totalCalls', 'inbound', 'outbound', 'internal', 'platform', 'averageTalkTime'] //set defualt columns if not included
+    }
+
     let callList = data.response.calls
     let sortedCalls = sortCallsToUsers(callList)
     let userList = []
     for (i in sortedCalls){
-      userList.push(getMetadata(sortedCalls[i]))
+      userList.push(getMetadata(sortedCalls[i], displayColumns))
     }
     userList = sortList(userList, data.sortValue, data.ascending)
     
     const pageSize = data.pageSize //number of users who fit on a page
     userList = paginateData(userList, pageSize) //only present the users who appear on this page
-    let displayValue = displayTable(userList)
+    let displayValue = displayTable(userList, displayColumns)
     $('.content', el).html(displayValue); //prints the table
     
     function sortCallsToUsers(callList){
@@ -45,22 +52,66 @@ widget = {
       }
     }
     
-    function getMetadata(userCalls){
-      userCalls.totalCalls = userCalls.calls.length
-      userCalls.averageTalkTime = formatTime(getAverageTalkTime(userCalls.calls))
-      userCalls.inbound = userCalls.calls.filter(function(call){return(call.direction == "Inbound")}).length
-      userCalls.outbound = userCalls.calls.filter(function(call){return(call.direction == "Outbound")}).length
-      userCalls.internal = userCalls.calls.filter(function(call){return(call.direction == "Internal")}).length
-      userCalls.platform = userCalls.calls.filter(function(call){return(call.direction == "Platform")}).length
+    function getMetadata(userCalls, columns){
+      let theseCalls
+      
+      let unfiltered = true
+      userCalls.filteredCalls = []
+      //for each of the columns it knows how to make, if that column name appears in the columns array, it computes the required values
+      if (columns.indexOf('inbound')!= -1){
+        unfiltered = false
+        theseCalls = userCalls.calls.filter(function(call){return(call.direction == "Inbound")})
+        userCalls.inbound = theseCalls.length
+        userCalls.filteredCalls = userCalls.filteredCalls.concat(theseCalls)
+      }
+      if (columns.indexOf('outbound')!= -1){
+        unfiltered = false
+        theseCalls = userCalls.calls.filter(function(call){return(call.direction == "Outbound")})
+        userCalls.outbound = theseCalls.length
+        userCalls.filteredCalls = userCalls.filteredCalls.concat(theseCalls)
+      }
+      if (columns.indexOf('internal')!= -1){
+        unfiltered = false
+        theseCalls = userCalls.calls.filter(function(call){return(call.direction == "Internal")})
+        userCalls.internal = theseCalls.length
+        userCalls.filteredCalls = userCalls.filteredCalls.concat(theseCalls)
+      }
+      if (columns.indexOf('platform')!= -1){
+        unfiltered = false
+        theseCalls = userCalls.calls.filter(function(call){return(call.direction == "Platform")})
+        userCalls.platform = theseCalls.length
+        userCalls.filteredCalls = userCalls.filteredCalls.concat(theseCalls)
+      }
+      if (unfiltered == true){
+        //if widget is not configured to display any call directions, use all user calls for totalCalls, averageTalkTime, and totalTalkTime
+        userCalls.filteredCalls = userCalls.calls
+      }
+      if (columns.indexOf('averageTalkTime')!= -1){
+        userCalls.averageTalkTime = formatTime(getAverageTalkTime(userCalls.filteredCalls))
+      }
+      if (columns.indexOf('totalTalkTime')!= -1){
+        userCalls.totalTalkTime = formatTime(getTotalTalkTime(userCalls.filteredCalls))
+        
+      }
+      if (columns.indexOf('totalCalls')!= -1){
+        userCalls.totalCalls = userCalls.filteredCalls.length
+      }
+      
       return (userCalls)
     }
     
     function getAverageTalkTime(callList){
+      let result = getTotalTalkTime(callList)/callList.length
+      return (result)
+    }
+
+    function getTotalTalkTime(callList){
       let totalTime = 0
       for (thisCall in callList){
         totalTime += getCallTime(callList[thisCall])
       }
-      return (totalTime/callList.length)
+      
+      return totalTime
     }
     
     function getCallTime(call){
@@ -122,7 +173,7 @@ widget = {
       return (data.slice(startIndex, endIndex))
     }
 
-    function formatTime(time) {
+    function formatTime(time) { //formats an amount of time in seconds into a string of hours minutes and seconds
       time = Math.round(time)
       let hours = padZeros(String(Math.floor(time / 3600))); //get the hours
       let minutes = padZeros(String(Math.floor((time % 3600) / 60))); //get the minutes
@@ -138,22 +189,37 @@ widget = {
       return value
     }
 
-    function displayTable(values){
+    function displayTable(values, displayColumns){
       var table = "<table class=\"memberList\" border=\"0\" cellpadding=\"5\" width=\"100%\">";
-      table += "<tr><td>Name</td><td>Total Calls</td><td>Inbound</td><td>Outbound</td><td>Internal</td><td>Platform</td><td>Avg Talk Time</td></tr>"
+      table += createHeader(displayColumns)
       for (i in values) {
         table += "<tr>"
         table += addTableData(values[i].firstName + " " + values[i].lastName)
-        table += addTableData(values[i].totalCalls)
-        table += addTableData(values[i].inbound)
-        table += addTableData(values[i].outbound)
-        table += addTableData(values[i].internal)
-        table += addTableData(values[i].platform)
-        table += addTableData(values[i].averageTalkTime)
+        for (column of displayColumns){
+          table += addTableData(values[i][column])
+        }
         table += "</tr>";
       }
       table += "</table>";
       return table;
+    }
+    
+    function createHeader(displayColumns){
+      let headerNames = new Map()
+      headerNames.set('totalCalls','Total Calls')
+      headerNames.set('averageTalkTime','Average Talk Time')
+      headerNames.set('totalTalkTime','Total Talk Time')
+      headerNames.set('inbound','Inbound')
+      headerNames.set('outbound','Outbound')
+      headerNames.set('internal','Internal')
+      headerNames.set('platform','Platform')
+      
+      let header = "<tr><td>Name</td>"
+      for (column of displayColumns){
+        header += "<td>" + headerNames.get(column) + "</td>"
+      }
+      header += "</tr>"
+      return header
     }
     
     function addTableData(string){
