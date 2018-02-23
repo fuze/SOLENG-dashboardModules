@@ -23,6 +23,7 @@ widget = {
     for (i in sortedCalls){
       userList.push(getMetadata(sortedCalls[i], displayColumns))
     }
+    userList = stripZeros(userList)
     userList = sortList(userList, data.sortValue, data.ascending)
     
     const pageSize = data.pageSize //number of users who fit on a page
@@ -93,9 +94,7 @@ widget = {
         userCalls.totalTalkTime = formatTime(getTotalTalkTime(userCalls.filteredCalls))
         
       }
-      if (columns.indexOf('totalCalls')!= -1){
-        userCalls.totalCalls = userCalls.filteredCalls.length
-      }
+      userCalls.totalCalls = userCalls.filteredCalls.length
       
       return (userCalls)
     }
