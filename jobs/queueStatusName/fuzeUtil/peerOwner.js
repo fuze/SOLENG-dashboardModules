@@ -3,8 +3,6 @@ url = require('url');
 
 warden = require('./wardenNodeAuth.js')
 
-const appToken = "2.M9G01Num4hZ08KQ.YXBwbGljYXRpb246dmh5NE5MMUU4UToyMU5VUk5Cd2NQ"
-
 var exports = module.exports = {}
 exports.getPeerOwner = getPeerOwner
 

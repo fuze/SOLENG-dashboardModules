@@ -118,14 +118,15 @@ module.exports = {
      } else {
       let authName = config.authName
       if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+        !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
         throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
       }
 
       let username = config.globalAuth[authName].username
       let password = config.globalAuth[authName].password
+      const appToken = config.globalAuth[authName].appToken
 
-      getToken(username, password, (wardenToken) => {
+      getToken(appToken, username, password, (wardenToken) => {
         getCallData(wardenToken, (callData) => {
           try {
             global.wallboardJobs[tenant][queueName][jobName].response = {}
@@ -140,13 +141,12 @@ module.exports = {
         });
       });
 
-      function getToken(username, password, callback){
+      function getToken(appToken, username, password, callback){
         if(global[tenant] && global[tenant].wardenToken !== undefined){
           callback(global[tenant].wardenToken);
         } else {
           try{
             const wardenAuth = require("./fuzeUtil/wardenNodeAuth.js").wardenAuth
-            const appToken = "2.M9G01Num4hZ08KQ.YXBwbGljYXRpb246dmh5NE5MMUU4UToyMU5VUk5Cd2NQ"
             wardenAuth(appToken, username, password, (response) => {
               let wardenToken = response.data.grant.token
               global[tenant] = {}
