@@ -33,12 +33,13 @@ To be able to use the sample dashboard that is included with this repository, th
 ```
 In the included dashboards, the "common" config is used to set configuration values for multiple widgets, however Atlasboard dashboards can be set up so that each widget has a unique configuration configured seperatly. To learn more about the structure of the dashboard configuration file structure check out the "dashboards" section of the [Atlasboard documentation](https://bitbucket.org/atlassian/atlasboard/wiki/Dashboards).
 
-The sample dashboards use a global authentication file to segregate the login data from the configuration. Create an authentication file "globalAuth.json" in the root of the wallboard directory. The included dashboards expect an authentication key with the name 'portalUser'. Enter the Portal username and password of the user that should be used to query the APIs as shown.
+The sample dashboards use a global authentication file to segregate the login data from the configuration. Create an authentication file "globalAuth.json" in the root of the wallboard directory. The included dashboards expect an authentication key with the name 'portalUser'. Enter the Portal username and password of the user that should be used to query the APIs and your Warden App Token as shown.
 ```
 {
   "portalUser" : {
     "username" : "PORTAL USERNAME",
-    "password" : "PORTAL PASSWORD"
+    "password" : "PORTAL PASSWORD",
+    "appToken" : "WardenAppToken"
   }
 }
 ```
