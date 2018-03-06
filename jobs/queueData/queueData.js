@@ -85,155 +85,126 @@ module.exports = {
 
      */
 
-     /* See if this is the first time */
-     let path = require('path');
-     let jobName      = path.basename(__filename);
-     let widgetTitle  = config.widgetTitle;
-     let thisVariable = config.variable;
      let queueName    = config.queue;
      let tenant       = config.tenant;
-     let fullResponse = {};
+     
 
-     fullResponse.title     = config.widgetTitle;
-     fullResponse.variable  = config.variable;
-     fullResponse.queue     = config.queue;
-     fullResponse.response  = {};
-     fullResponse.threshold = config.threshold;
+    let authName = config.authName
+    if (!config.globalAuth || !config.globalAuth[authName] ||
+      !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
+      throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+    }
 
-     if(global.wallboardJobs === undefined) { global.wallboardJobs = {}; } // init global.wallboardJobs
-     if(global.wallboardJobs[tenant] === undefined) { global.wallboardJobs[tenant] = {}; }
-     if(global.wallboardJobs[tenant][queueName] === undefined) { global.wallboardJobs[tenant][queueName] = {}; }
+    let username = config.globalAuth[authName].username
+    let password = config.globalAuth[authName].password
+    const appToken = config.globalAuth[authName].appToken
 
-     if(global.wallboardJobs[tenant][queueName][jobName] === undefined){
-       global.wallboardJobs[tenant][queueName][jobName] = {};
-       global.wallboardJobs[tenant][queueName][jobName].firstWidget = widgetTitle;
-       global.wallboardJobs[tenant][queueName][jobName].response = {};
-     } //  Initing done
-
-    let firstWidget = global.wallboardJobs[tenant][queueName][jobName].firstWidget;
-
-     if(widgetTitle != global.wallboardJobs[tenant][queueName][jobName].firstWidget) {
-       fullResponse.response = global.wallboardJobs[tenant][queueName][jobName].response;
-       jobCallback(null, fullResponse);
-     } else {
-      let authName = config.authName
-      if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
-        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
-      }
-
-      let username = config.globalAuth[authName].username
-      let password = config.globalAuth[authName].password
-      const appToken = config.globalAuth[authName].appToken
-
-      getToken(appToken, username, password, (wardenToken) => {
-        getCallData(wardenToken, (callData) => {
-          try {
-            global.wallboardJobs[tenant][queueName][jobName].response = {}
-            global.wallboardJobs[tenant][queueName][jobName].response = callData;
-            fullResponse.response = callData;
-            jobCallback(null, fullResponse);
-          } catch (err) {
-            console.error('error:');
-            console.error(err);
-            jobCallback(err, null);
-          }
-        });
-      });
-
-      function getToken(appToken, username, password, callback){
-        if(global[tenant] && global[tenant].wardenToken !== undefined){
-          callback(global[tenant].wardenToken);
-        } else {
-          try{
-            const wardenAuth = require("./fuzeUtil/wardenNodeAuth.js").wardenAuth
-            wardenAuth(appToken, username, password, (response) => {
-              let wardenToken = response.data.grant.token
-              global[tenant] = {}
-              global[tenant].wardenToken = wardenToken
-              callback(wardenToken)
-            });
-          } catch(err) {
-            console.log(err)
-            callback(null)
-          }
-        }
-      }
-
-      function getCallData (wardenToken, callback, max, storedResults, first){
+    getToken(appToken, username, password, (wardenToken) => {
+      getCallData(wardenToken, (callData) => {
         try {
-          if (!wardenToken){
-            throw 'Error: no warden token'
-          }
-          if (!max){var max=1000}
-          if (!storedResults){var storedResults=[]}
-          let startTime = getStartTime(config.timeRange)
-          let endpointURL = "https://rest.data.fuze.com/queueCalls?after=" + startTime +"&tk=" + tenant + "&limit=" + max
-          if (queueName){
-            endpointURL += "&queue=" + queueName //if a queue is specified in the config, use it in the request. Otherwise, defaults to all
-          }
-          if (first){
-            endpointURL += "&first=" + first
-          }
-          let options = {
-            url: endpointURL,
-            headers : {
-              Authorization: "Bearer " + wardenToken
-            }
-          }
-          dependencies.easyRequest.JSON(options, (err, response) => {
-            if (err){
-              console.log(err)
-              callback(null)
-            } else {
-              try {
-                if (response.queueCalls.length < max){  //if the results are shorter than the max, there are no more results to grab
-                  if (typeof first != 'undefined'){
-                    response.queueCalls = response.queueCalls.splice(1) //if we specified a first element, we will need to remove it from our results
-                  }
-                  Array.prototype.push.apply(storedResults, response.queueCalls)
-                  callback({queueCalls: storedResults})
-                } else {
-                  if (typeof first != 'undefined'){
-                    response.queueCalls = response.queueCalls.splice(1) //if we specified a first element, we will need to remove it from our results
-                  }
-                  Array.prototype.push.apply(storedResults, response.queueCalls)
-                  let lastId = response.queueCalls[response.queueCalls.length-1].id //get the id of the last call we got to use as the 'first'
-                  getCallData(wardenToken, callback, max, storedResults, lastId)
-                }
-              } catch (err) {
-                console.log(err)
-                callback(null)
-              }
-            }
-          })
+          response = {title: config.widgetTitle, variable: config.variable, queue: config.queue, response: callData, threshold: config.threshold};
+          jobCallback(null, response);
         } catch (err) {
+          console.error('error:');
+          console.error(err);
+          jobCallback(err, null);
+        }
+      });
+    });
+
+    function getToken(appToken, username, password, callback){
+      if(global[tenant] && global[tenant].wardenToken !== undefined){
+        callback(global[tenant].wardenToken);
+      } else {
+        try{
+          const wardenAuth = require("./fuzeUtil/wardenNodeAuth.js").wardenAuth
+          wardenAuth(appToken, username, password, (response) => {
+            let wardenToken = response.data.grant.token
+            global[tenant] = {}
+            global[tenant].wardenToken = wardenToken
+            callback(wardenToken)
+          });
+        } catch(err) {
           console.log(err)
           callback(null)
         }
       }
+    }
 
-      function getStartTime(range){
-        if (range != "day" && range != "week" && range != "month"){
-          throw "timeRange must either be 'day', 'week', 'month', '7d', or '30d'"
+    function getCallData (wardenToken, callback, max, storedResults, first){
+      try {
+        if (!wardenToken){
+          throw 'Error: no warden token'
         }
-        let startTime = new Date()
-        startTime.setMinutes(0)
-        startTime.setHours(0)
-        startTime.setSeconds(0)
-        startTime.setMilliseconds(0)
-        if (range == "week") {
-          startTime.setDate(startTime.getDate()-startTime.getDay())
-        } else if (range == "month"){
-          startTime.setDate(1)
-        } else if (range == "7d"){
-          startTime.setDate(startTime.getDate-7)
-        } else if (range == "30d"){
-          startTime.setDate(startTime.getDate-30)
+        if (!max){var max=1000}
+        if (!storedResults){var storedResults=[]}
+        let startTime = getStartTime(config.timeRange)
+        let endpointURL = "https://rest.data.fuze.com/queueCalls?after=" + startTime +"&tk=" + tenant + "&limit=" + max
+        if (queueName){
+          endpointURL += "&queue=" + queueName //if a queue is specified in the config, use it in the request. Otherwise, defaults to all
         }
-
-        return (startTime.toJSON())
+        if (first){
+          endpointURL += "&first=" + first
+        }
+        let options = {
+          url: endpointURL,
+          headers : {
+            Authorization: "Bearer " + wardenToken
+          }
+        }
+        dependencies.easyRequest.JSON(options, (err, response) => {
+          if (err){
+            console.log(err)
+            callback(null)
+          } else {
+            try {
+              if (response.queueCalls.length < max){  //if the results are shorter than the max, there are no more results to grab
+                if (typeof first != 'undefined'){
+                  response.queueCalls = response.queueCalls.splice(1) //if we specified a first element, we will need to remove it from our results
+                }
+                Array.prototype.push.apply(storedResults, response.queueCalls)
+                callback({queueCalls: storedResults})
+              } else {
+                if (typeof first != 'undefined'){
+                  response.queueCalls = response.queueCalls.splice(1) //if we specified a first element, we will need to remove it from our results
+                }
+                Array.prototype.push.apply(storedResults, response.queueCalls)
+                let lastId = response.queueCalls[response.queueCalls.length-1].id //get the id of the last call we got to use as the 'first'
+                getCallData(wardenToken, callback, max, storedResults, lastId)
+              }
+            } catch (err) {
+              console.log(err)
+              callback(null)
+            }
+          }
+        })
+      } catch (err) {
+        console.log(err)
+        callback(null)
       }
     }
+
+    function getStartTime(range){
+      if (range != "day" && range != "week" && range != "month"){
+        throw "timeRange must either be 'day', 'week', 'month', '7d', or '30d'"
+      }
+      let startTime = new Date()
+      startTime.setMinutes(0)
+      startTime.setHours(0)
+      startTime.setSeconds(0)
+      startTime.setMilliseconds(0)
+      if (range == "week") {
+        startTime.setDate(startTime.getDate()-startTime.getDay())
+      } else if (range == "month"){
+        startTime.setDate(1)
+      } else if (range == "7d"){
+        startTime.setDate(startTime.getDate-7)
+      } else if (range == "30d"){
+        startTime.setDate(startTime.getDate-30)
+      }
+
+      return (startTime.toJSON())
+    }
   }
+  
 };
