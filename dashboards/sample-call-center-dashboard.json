@@ -38,7 +38,7 @@
      "callsCompleted" : {
        "widgetTitle" : "Calls Completed"
      },
-     "abandonedCount" : {
+     "abandonCount" : {
        "widgetTitle" : "Abandoned",
        "timeRange":"day",
        "variable":"abandon"
