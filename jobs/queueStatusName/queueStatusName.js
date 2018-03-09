@@ -82,54 +82,78 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-    try{
-      let authName = config.authName
-      if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
-        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
-      }
 
-      let username = config.globalAuth[authName].username
-      let password = config.globalAuth[authName].password
+    //define the config values that effect the job
+    //this is used to determine if we can reuse the response from another instance of this job running
+    let jobConfig = { 
+      "job": "queueStatusName",
+      "interval": config.interval,
+      "queue": config.queue,
+      "tenant": config.tenant,
+      "authName": config.authName
+    }
 
-      const getPeerOwner = require("./fuzeUtil/peerOwner.js").getPeerOwner
+    const responseCache = require("./fuzeUtil/responseCache.js")
+    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
+    let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
+    if (cachedResponse){ //use cached response
+      jobCallback(null, {
+        response: cachedResponse, 
+        title: config.widgetTitle, 
+        queue: config.queue, 
+        threshold: config.threshold
+      })
+    }else{ //no cached response found
+      try{
+        let authName = config.authName
+        if (!config.globalAuth || !config.globalAuth[authName] ||
+          !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+          throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+        }
 
-      baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
-      var options = {
-        url : baseURL.replace("$QUEUE", config.queue),
-        headers : {"username" : username, "password" : password}
-      }
-      dependencies.easyRequest.JSON(options, function (err, response) {
-        if (!err){
-          var peerList = []
-          for (i in response.members){ //pull the peer names from the member list to give to PeerOwner
-            peerList.push(response.members[i].name)
-          }
-          credentials = {
-            user: username,
-            pass: password,
-            tenant: config.tenant
-          }
-          if (peerList.length > 0){
-            getPeerOwner(credentials, peerList, function(peerOwners){
-              for (i in response.members){ //loop through the list of mebers to see if we found a matching name from peerOwners.
-                for (n in peerOwners){
-                  if (response.members[i].name.substring(4).toLowerCase() == peerOwners[n].peer){ //if the name matches, replace it.
-                    response.members[i].name = (peerOwners[n].displayName)
+        let username = config.globalAuth[authName].username
+        let password = config.globalAuth[authName].password
+
+        const getPeerOwner = require("./fuzeUtil/peerOwner.js").getPeerOwner
+
+        baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
+        var options = {
+          url : baseURL.replace("$QUEUE", config.queue),
+          headers : {"username" : username, "password" : password}
+        }
+        dependencies.easyRequest.JSON(options, function (err, response) {
+          if (!err){
+            var peerList = []
+            for (i in response.members){ //pull the peer names from the member list to give to PeerOwner
+              peerList.push(response.members[i].name)
+            }
+            credentials = {
+              user: username,
+              pass: password,
+              tenant: config.tenant
+            }
+            if (peerList.length > 0){
+              getPeerOwner(credentials, peerList, function(peerOwners){
+                for (i in response.members){ //loop through the list of mebers to see if we found a matching name from peerOwners.
+                  for (n in peerOwners){
+                    if (response.members[i].name.substring(4).toLowerCase() == peerOwners[n].peer){ //if the name matches, replace it.
+                      response.members[i].name = (peerOwners[n].displayName)
+                    }
                   }
                 }
-              }
-              jobCallback(err, {title: config.widgetTitle, response: response, threshold: config.threshold});
-            });
+                global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, response)
+                jobCallback(err, {title: config.widgetTitle, queue: config.queue, response: response, threshold: config.threshold});
+              });
+            } else {
+              nullResponse("Error: Peer List is empty")
+            }
           } else {
-            nullResponse("Error: Peer List is empty")
+            nullResponse(err)
           }
-        } else {
-          nullResponse(err)
-        }
-      });
-    }catch(err){
-      nullResponse(err)
+        });
+      }catch(err){
+        nullResponse(err)
+      }
     }
 
     function nullResponse (err){
