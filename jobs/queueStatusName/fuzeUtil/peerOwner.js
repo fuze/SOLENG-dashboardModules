@@ -16,7 +16,6 @@ function getPeerOwner (credentials, peers, callback) {
       }
       peerOwners.push(peerInfo)
       if (peerOwners.length == peers.length){
-
         callback(peerOwners)
       }
     })
@@ -40,7 +39,6 @@ function getPeerInfo (credentials, peer, callback) {
   options.headers = {
     "username" : credentials.user,
     "password" : credentials.pass}
-//  console.log(options)
   var req = https.request(options, function (response){
     if (response.statusCode == 200){
       var str = ''
@@ -49,7 +47,7 @@ function getPeerInfo (credentials, peer, callback) {
       });
       response.on('end', function(chunk) {
         response = JSON.parse(str)
-        if (response.peers && response.peers.user && response.peers.user.displayName){
+        if (response.peers[0] && response.peers[0].user && response.peers[0].user.displayName){
           callback(response)
         } else {
           badResponse()
