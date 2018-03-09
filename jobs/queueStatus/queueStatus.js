@@ -82,48 +82,28 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-     /*
-    console.log(config.widgetTitle);
-     if(global.MikesTest === undefined) {
-       console.log('no global...')
-       global.MikesTest = 'Global variable available.'
-     } else {
-       console.log(global.MikesTest)
-     }
-     */
 
-    /* See if this is the first time */
-    let path = require('path');
-    let jobName      = path.basename(__filename);
-    let widgetTitle  = config.widgetTitle;
-    let thisVariable = config.variable;
-    let queueName    = config.queue;
-    let tenant       = config.tenant;
-    let fullResponse = {};
-
-    fullResponse.title     = config.widgetTitle;
-    fullResponse.variable  = config.variable;
-    fullResponse.queue     = config.queue;
-    fullResponse.response  = {};
-    fullResponse.threshold = config.threshold;
-
-    if(global.wallboardJobs === undefined) { global.wallboardJobs = {}; } // init global.wallboardJobs
-    if(global.wallboardJobs[tenant] === undefined) { global.wallboardJobs[tenant] = {}; }
-    if(global.wallboardJobs[tenant][queueName] === undefined) { global.wallboardJobs[tenant][queueName] = {}; }
-
-    if(global.wallboardJobs[tenant][queueName][jobName] === undefined){
-      global.wallboardJobs[tenant][queueName][jobName] = {};
-      global.wallboardJobs[tenant][queueName][jobName].firstWidget = widgetTitle;
-      global.wallboardJobs[tenant][queueName][jobName].response = {};
-    } //  Initing done
-
-   let firstWidget = global.wallboardJobs[tenant][queueName][jobName].firstWidget;
-
-   if(widgetTitle != global.wallboardJobs[tenant][queueName][jobName].firstWidget) {
-     fullResponse.response = global.wallboardJobs[tenant][queueName][jobName].response;
-     jobCallback(null, fullResponse);
-    } else {
-      //console.log(`*** Need to get new data.`)
+    //define the config values that effect the job
+    //this is used to determine if we can reuse the response from another instance of this job running
+    let jobConfig = { 
+      "job": "queueStatus",
+      "interval": config.interval,
+      "queue": config.queue,
+      "tenant": config.tenant,
+      "authName": config.authName
+    }
+    const responseCache = require("./responseCache.js")
+    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
+    let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
+    if (cachedResponse){ //use cached response
+      jobCallback(null, {
+        response: cachedResponse, 
+        title: config.widgetTitle, 
+        variable: config.variable, 
+        queue: config.queue, 
+        threshold: config.threshold
+      })
+    }else{ //no cached response found
       try {
         let authName = config.authName
         if (!config.globalAuth || !config.globalAuth[authName] ||
@@ -140,12 +120,15 @@ module.exports = {
           headers : {"username" : username, "password" : password}
         }
         dependencies.easyRequest.JSON(options, function (err, response) {
-          //global.wallboardJobs[jobName].response = response;
-          //jobCallback(err, {title: config.widgetTitle, queue: config.queue, response: response, threshold: config.threshold});
-          global.wallboardJobs[tenant][queueName][jobName].response = {}
-          global.wallboardJobs[tenant][queueName][jobName].response = response;
-          fullResponse.response = response;
-          jobCallback(null, fullResponse);
+          //once we get a response, we want to cache it for other jobs that might need the same info
+          global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, response)
+          jobCallback(null, {
+            response: response, 
+            title: config.widgetTitle, 
+            variable: config.variable, 
+            queue: config.queue, 
+            threshold: config.threshold
+          })
         });
       } catch(err) {
         console.log(err)
