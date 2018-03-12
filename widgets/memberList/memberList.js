@@ -1,10 +1,6 @@
 widget = {
   //runs when we receive data from the job
   onData: function (el, data) {
-    $("a[href^='https://data.fuze.com/queues/']").each(function() {
-      this.href = 'https://data.fuze.com/queues/' + data.queue + '?after=now-0d&before=now';
-    })
-
     var response = data.response //gets response from the job
     //The parameters our job passed through are in the data object
     //el is our widget element, so our actions should all be relative to that
