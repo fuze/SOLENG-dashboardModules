@@ -1,9 +1,6 @@
 widget = {
   //runs when we receive data from the job
   onData: function (el, data) {
-    $("a[href^='https://data.fuze.com/queues/']").each(function() {
-      this.href = 'https://data.fuze.com/queues/' + data.queue + '?after=now-0d&before=now';
-    })
 
     var response = data.response //gets response from the job
     //The parameters our job passed through are in the data object
@@ -29,7 +26,8 @@ widget = {
     var displayValue = convertTime(response.avgHoldTime)
 
     $('.content', el).html(displayValue); //prints the table
-
+    $('a', el).attr('href', 'https://data.fuze.com/queues/' + data.queue + '/summary')
+    
     if (data.threshold && parseInt(displayValue)>=data.threshold) {
       $(el).parent().css("background-color", "$brand-danger");
       $('.content', el).css("color", "$brand-danger-content");
