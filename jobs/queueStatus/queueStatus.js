@@ -92,7 +92,7 @@ module.exports = {
       "tenant": config.tenant,
       "authName": config.authName
     }
-    const responseCache = require("./responseCache.js")
+    const responseCache = require("../util/responseCache.js")
     if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
     let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
     if (cachedResponse){ //use cached response

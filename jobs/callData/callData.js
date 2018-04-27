@@ -83,35 +83,59 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-    let authName = config.authName
-    if (!config.globalAuth || !config.globalAuth[authName] ||
-      !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
-      throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+    let jobConfig = { 
+      "job": "callData",
+      "interval": config.interval,
+      "tenant": config.tenant,
+      "authName": config.authName,
+      "timeRange": config.timeRange,
+      "department": config.department
     }
+    const responseCache = require("../util/responseCache.js")
+    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
+    let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
+    if (cachedResponse){ //use cached response
+      jobCallback(null, {
+        response: cachedResponse, 
+        title: config.widgetTitle, 
+        pageSize: config.pageSize,
+        sortValue: config.sortValue,
+        ascending: config.ascending,
+        displayColumns: config.displayColumns
+      })
+    }else{ //no cached response found
 
-    let username = config.globalAuth[authName].username
-    let password = config.globalAuth[authName].password
-    const appToken = config.globalAuth[authName].appToken
-    
-    getToken(appToken, username, password, (wardenToken) => {
-      getUserList(wardenToken, (userList) => {
-        getCallData(wardenToken, (callData) => {
-          try {
-            for (call in callData.calls){
-              addNameToCall(callData.calls[call],userList.users)
+
+      let authName = config.authName
+      if (!config.globalAuth || !config.globalAuth[authName] ||
+        !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
+        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+      }
+
+      let username = config.globalAuth[authName].username
+      let password = config.globalAuth[authName].password
+      const appToken = config.globalAuth[authName].appToken
+      
+      getToken(appToken, username, password, (wardenToken) => {
+        getUserList(wardenToken, (userList) => {
+          getCallData(wardenToken, (callData) => {
+            try {
+              for (call in callData.calls){
+                addNameToCall(callData.calls[call],userList.users)
+              }
+              jobCallback(null, {title: config.widgetTitle, response: callData, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending, displayColumns: config.displayColumns})
+            } catch (err) {
+              console.log(err)
+              jobCallback(err, null)
             }
-            jobCallback(null, {title: config.widgetTitle, response: callData, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending, displayColumns: config.displayColumns})
-          } catch (err) {
-            console.log(err)
-            jobCallback(err, null)
-          }
+          });
         });
       });
-    });
+    }
 
     function getToken(appToken, username, password, callback){
       try{
-        const wardenAuth = require("./fuzeUtil/wardenNodeAuth.js").wardenAuth
+        const wardenAuth = require("../util/wardenNodeAuth.js").wardenAuth
         wardenAuth(appToken, username, password, (response) => {
           let wardenToken = response.data.grant.token
           callback(wardenToken)

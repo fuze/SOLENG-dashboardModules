@@ -85,39 +85,60 @@ module.exports = {
 
      */
 
-     let queueName    = config.queue;
-     let tenant       = config.tenant;
-     
-
+    let queueName    = config.queue;
+    let tenant       = config.tenant;
     let authName = config.authName
-    if (!config.globalAuth || !config.globalAuth[authName] ||
-      !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
-      throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+
+    let jobConfig = {
+      "job": "queueData",
+      "interval": config.interval,
+      "queue": config.queue,
+      "tenant": config.tenant,
+      "authName": config.authName
     }
+     
+    const responseCache = require("../util/responseCache.js")
+    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } //init global.cachedWallboardResponses
+    let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
+    if (cachedResponse){ //use cached response
+      jobCallback(null, {
+        response: cachedResponse, 
+        title: config.widgetTitle, 
+        variable: config.variable, 
+        queue: config.queue, 
+        threshold: config.threshold
+      })
+    }else{ //no cached response found
+      if (!config.globalAuth || !config.globalAuth[authName] ||
+        !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
+        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+      }
 
-    let username = config.globalAuth[authName].username
-    let password = config.globalAuth[authName].password
-    const appToken = config.globalAuth[authName].appToken
+      let username = config.globalAuth[authName].username
+      let password = config.globalAuth[authName].password
+      const appToken = config.globalAuth[authName].appToken
 
-    getToken(appToken, username, password, (wardenToken) => {
-      getCallData(wardenToken, (callData) => {
-        try {
-          response = {title: config.widgetTitle, variable: config.variable, queue: config.queue, response: callData, threshold: config.threshold};
-          jobCallback(null, response);
-        } catch (err) {
-          console.error('error:');
-          console.error(err);
-          jobCallback(err, null);
-        }
+      getToken(appToken, username, password, (wardenToken) => {
+        getCallData(wardenToken, (callData) => {
+          try {
+            global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, callData)
+            let response = {title: config.widgetTitle, queue: config.queue, response: callData, threshold: config.threshold, variable: config.variable, };
+            jobCallback(null, response);
+          } catch (err) {
+            console.error('error:');
+            console.error(err);
+            jobCallback(err, null);
+          }
+        });
       });
-    });
+    }
 
     function getToken(appToken, username, password, callback){
       if(global[tenant] && global[tenant].wardenToken !== undefined){
         callback(global[tenant].wardenToken);
       } else {
         try{
-          const wardenAuth = require("./fuzeUtil/wardenNodeAuth.js").wardenAuth
+          const wardenAuth = require("../util/wardenNodeAuth.js").wardenAuth
           wardenAuth(appToken, username, password, (response) => {
             let wardenToken = response.data.grant.token
             global[tenant] = {}
