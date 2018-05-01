@@ -37,7 +37,7 @@ function isEquivalent(a, b) {
 
   for (var i = 0; i < aProps.length; i++) {
     var propName = aProps[i];
-      if (a[propName] !== b[propName]) {
+      if (JSON.stringify(a[propName]) !== JSON.stringify(b[propName])) {
         return false;
       }
   }
