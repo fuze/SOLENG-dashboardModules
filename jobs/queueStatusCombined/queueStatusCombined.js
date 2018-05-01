@@ -82,39 +82,34 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
      */
 
-     /* See if this is the first time */
-     let path = require('path');
-     let jobName      = path.basename(__filename);
-     let widgetTitle  = config.widgetTitle;
-     let thisVariable = config.variable;
-     let queueName    = config.queue;
-     let tenant       = config.tenant;
-     let fullResponse = {};
-
-     fullResponse.title     = config.widgetTitle;
-     fullResponse.variable  = config.variable;
-     fullResponse.queue     = config.queue;
-     fullResponse.response  = {};
-     fullResponse.threshold = config.threshold;
-
-     if(global.wallboardJobs === undefined) { global.wallboardJobs = {}; } // init global.wallboardJobs
-     if(global.wallboardJobs[tenant] === undefined) { global.wallboardJobs[tenant] = {}; }
-     if(global.wallboardJobs[tenant][queueName] === undefined) { global.wallboardJobs[tenant][queueName] = {}; }
-
-     if(global.wallboardJobs[tenant][queueName][jobName] === undefined){
-       global.wallboardJobs[tenant][queueName][jobName] = {};
-       global.wallboardJobs[tenant][queueName][jobName].firstWidget = widgetTitle;
-       global.wallboardJobs[tenant][queueName][jobName].response = {};
-     } //  Initing done
-
-    let firstWidget = global.wallboardJobs[tenant][queueName][jobName].firstWidget;
-
-    if(widgetTitle != global.wallboardJobs[tenant][queueName][jobName].firstWidget) {
-      fullResponse.response = global.wallboardJobs[tenant][queueName][jobName].response;
-      jobCallback(null, fullResponse);
-     } else {
+    let jobConfig = { 
+      "job": "queueStatusCombined",
+      "interval": config.interval,
+      "queue": config.queue,
+      "tenant": config.tenant,
+      "authName": config.authName
+    }
+    const responseCache = require("../util/responseCache.js")
+    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
+      let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
+     if (cachedResponse){ //use cached response
+       jobCallback(null, {
+         response: cachedResponse, 
+          title: config.widgetTitle, 
+          variable: config.variable, 
+          queue: config.queue, 
+         threshold: config.threshold
+       })
+    }else{ //no cached response found
       try {
+       let fullResponse = {};
+       fullResponse.title     = config.widgetTitle;
+       fullResponse.variable  = config.variable;
+       fullResponse.queue     = config.queue;
+       fullResponse.response  = {};
+       fullResponse.threshold = config.threshold;
         let authName = config.authName
+
         if (!config.globalAuth || !config.globalAuth[authName] ||
           !config.globalAuth[authName].username || !config.globalAuth[authName].password){
           throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
@@ -125,15 +120,19 @@ module.exports = {
 
         var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
         var responseList = []
-        for (var i=0 in config.queue) {
+        for (var i=0 in config.queue) { //todo: replace with a promise
           var options = {
             url : baseURL.replace("$QUEUE", config.queue[i]),
             headers : {"username" : username, "password" : password}
           }
           dependencies.easyRequest.JSON(options, function (err, response) {
+            if (err){throw (err)}
+            console.log(response)
+
             responseList.push(response)
             if (responseList.length == config.queue.length) {
-              combineResponses(responseList, fullResponse);
+              fullResponse.response = combineResponses(responseList);
+              jobCallback(null, fullResponse);
             }
           });
         }
@@ -142,7 +141,7 @@ module.exports = {
         jobCallback(err, null)
       }
     }
-
+    
     function combineResponses (responseList) {
       try {
         var combinedResponse = {} // init values
@@ -150,6 +149,7 @@ module.exports = {
         combinedResponse.numAbandoned = 0
         combinedResponse.numCompleted = 0
         combinedResponse.serviceLevelPerf = 0
+        combinedResponse.avgHoldTime = 0
         var maxWaitingArray = []
         var memberList = []
 
@@ -160,7 +160,9 @@ module.exports = {
 
           combinedResponse.serviceLevelPerf += (responseList[i].numCompleted * responseList[i].serviceLevelPerf) //do weighted averages
           combinedResponse.avgHoldTime += (responseList[i].numCompleted * responseList[i].avgHoldTime)
-
+          console.log(responseList[i].avgHoldTime)
+          console.log("SLA: " + combinedResponse.serviceLevelPerf)
+          console.log("hold time: " + combinedResponse.avgHoldTime)
           maxWaitingArray.push(responseList[i].maxWaiting)
           memberList.push(responseList[i].members)
         }
@@ -171,11 +173,7 @@ module.exports = {
         combinedResponse.members = combineMembers(memberList) //combine the queue memeber lists
 
 
-        global.wallboardJobs[tenant][queueName][jobName].response = {}
-        global.wallboardJobs[tenant][queueName][jobName].response = response;
-        fullResponse.response = response;
-        jobCallback(null, fullResponse);
-        //jobCallback(null, {title: config.widgetTitle, response: combinedResponse, threshold: config.threshold}); //send response to widget
+        return (combinedResponse);
       }catch(err){
         console.log(err)
         jobCallback(err, null)
