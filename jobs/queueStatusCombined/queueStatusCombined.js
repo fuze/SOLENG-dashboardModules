@@ -132,6 +132,7 @@ module.exports = {
             responseList.push(response)
             if (responseList.length == config.queue.length) {
               fullResponse.response = combineResponses(responseList);
+              global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, fullResponse.response)
               jobCallback(null, fullResponse);
             }
           });
@@ -160,9 +161,6 @@ module.exports = {
 
           combinedResponse.serviceLevelPerf += (responseList[i].numCompleted * responseList[i].serviceLevelPerf) //do weighted averages
           combinedResponse.avgHoldTime += (responseList[i].numCompleted * responseList[i].avgHoldTime)
-          console.log(responseList[i].avgHoldTime)
-          console.log("SLA: " + combinedResponse.serviceLevelPerf)
-          console.log("hold time: " + combinedResponse.avgHoldTime)
           maxWaitingArray.push(responseList[i].maxWaiting)
           memberList.push(responseList[i].members)
         }
