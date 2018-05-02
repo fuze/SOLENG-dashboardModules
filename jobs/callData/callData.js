@@ -38,7 +38,7 @@ module.exports = {
    * @param dependencies
    * @param jobCallback
    */
-  onRun: function (config, dependencies, jobCallback) {
+  onRun: async function (config, dependencies, jobCallback) {
 
     /*
      1. USE OF JOB DEPENDENCIES
@@ -104,19 +104,20 @@ module.exports = {
         displayColumns: config.displayColumns
       })
     }else{ //no cached response found
-
-
       let authName = config.authName
       if (!config.globalAuth || !config.globalAuth[authName] ||
         !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
         throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
       }
 
-      let username = config.globalAuth[authName].username
-      let password = config.globalAuth[authName].password
+      const username = config.globalAuth[authName].username
+      const password = config.globalAuth[authName].password
       const appToken = config.globalAuth[authName].appToken
-      
-      getToken(appToken, username, password, (wardenToken) => {
+
+      try {
+        const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
+        const userToken = await wardenAuth(appToken, username, password);
+
         getUserList(wardenToken, (userList) => {
           getCallData(wardenToken, (callData) => {
             try {
@@ -130,21 +131,11 @@ module.exports = {
             }
           });
         });
-      });
+      } catch (e) {
+        logger.error(e);
+      }    
     }
 
-    function getToken(appToken, username, password, callback){
-      try{
-        const wardenAuth = require("../util/wardenNodeAuth.js").wardenAuth
-        wardenAuth(appToken, username, password, (response) => {
-          let wardenToken = response.data.grant.token
-          callback(wardenToken)
-        });
-      } catch(err) {
-        console.log(err)
-        callback(null)
-      }
-    }
 
     function getUserList(wardenToken, callback){
       try{
@@ -175,7 +166,7 @@ module.exports = {
       }
     }
 
-    function getCallData (wardenToken, callback, max, storedResults, first){
+    function getCallData(wardenToken, callback, max, storedResults, first){
       try {
         if (!wardenToken){
           throw 'Error: no warden token'
