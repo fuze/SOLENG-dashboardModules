@@ -83,37 +83,32 @@ module.exports = {
 
      */
 
-     /* See if this is the first time */
-     let path = require('path');
-     let jobName      = path.basename(__filename);
-     let widgetTitle  = config.widgetTitle;
-     let thisVariable = config.variable;
-     let queueName    = config.queue;
-     let tenant       = config.tenant;
-     let fullResponse = {};
+    let jobConfig = { 
+      "job": "queueSummary",
+      "interval": config.interval,
+      "queue": config.queue,
+      "authName": config.authName
+    }
 
-     fullResponse.title     = config.widgetTitle;
-     fullResponse.variable  = config.variable;
-     fullResponse.queue     = config.queue;
-     fullResponse.response  = {};
-     fullResponse.threshold = config.threshold;
+    const responseCache = require("../util/responseCache.js")
+    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
+    let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
+    if (cachedResponse){ //use cached response
+      jobCallback(null, {
+        response: cachedResponse, 
+        title: config.widgetTitle,
+        variable: config.variable,
+        queue: config.queue, 
+        threshold: config.threshold
+      })
+    }else{ //no cached response found
+      let fullResponse = {};
+      fullResponse.title     = config.widgetTitle;
+      fullResponse.variable  = config.variable;
+      fullResponse.queue     = config.queue;
+      fullResponse.response  = {};
+      fullResponse.threshold = config.threshold;
 
-     if(global.wallboardJobs === undefined) { global.wallboardJobs = {}; } // init global.wallboardJobs
-     if(global.wallboardJobs[tenant] === undefined) { global.wallboardJobs[tenant] = {}; }
-     if(global.wallboardJobs[tenant][queueName] === undefined) { global.wallboardJobs[tenant][queueName] = {}; }
-
-     if(global.wallboardJobs[tenant][queueName][jobName] === undefined){
-       global.wallboardJobs[tenant][queueName][jobName] = {};
-       global.wallboardJobs[tenant][queueName][jobName].firstWidget = widgetTitle;
-       global.wallboardJobs[tenant][queueName][jobName].response = {};
-     } //  Initing done
-
-    let firstWidget = global.wallboardJobs[tenant][queueName][jobName].firstWidget;
-
-    if(widgetTitle != global.wallboardJobs[tenant][queueName][jobName].firstWidget) {
-      fullResponse.response = global.wallboardJobs[tenant][queueName][jobName].response;
-      jobCallback(null, fullResponse);
-     } else {
       try {
         let authName = config.authName
         if (!config.globalAuth || !config.globalAuth[authName] ||
@@ -130,8 +125,7 @@ module.exports = {
           headers : {"username" : username, "password" : password}
         }
         dependencies.easyRequest.JSON(options, function (err, response) {
-          global.wallboardJobs[tenant][queueName][jobName].response = {}
-          global.wallboardJobs[tenant][queueName][jobName].response = response;
+          global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, response)
           fullResponse.response = response;
           jobCallback(null, fullResponse);
         });
