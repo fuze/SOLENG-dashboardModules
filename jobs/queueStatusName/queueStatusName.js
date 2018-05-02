@@ -93,7 +93,7 @@ module.exports = {
       "authName": config.authName
     }
 
-    const responseCache = require("./fuzeUtil/responseCache.js")
+    const responseCache = require("../util/responseCache.js")
     if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
     let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
     if (cachedResponse){ //use cached response
@@ -114,7 +114,7 @@ module.exports = {
         let username = config.globalAuth[authName].username
         let password = config.globalAuth[authName].password
 
-        const getPeerOwner = require("./fuzeUtil/peerOwner.js").getPeerOwner
+        const getPeerOwner = require("../util/peerOwner.js").getPeerOwner
 
         baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
         var options = {
