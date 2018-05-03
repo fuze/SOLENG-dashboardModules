@@ -248,6 +248,7 @@ Displays the number of calls that have entered a queue within a given time range
 
 #### Associated job:
 - queueData
+- queueDataCombined
 
 #### Config:
 ```
@@ -255,6 +256,23 @@ queue: key of the queue you would like to monitor. If none is supplied, defaults
 tenant: customer code in Portal
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 timeRange: allowed values are 'day', 'week', 'month', '7d', or '30d'. Defaults to 'day' (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
+### Queue Disposition:
+Displays the number of completed queue calls that have a given disposition.
+
+#### Associated job:
+- queueData
+- queueDataCombined
+
+#### Config:
+```
+queue: key of the queue you would like to monitor. If none is supplied, defaults to all (optional)
+tenant: customer code in Portal
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+timeRange: allowed values are 'day', 'week', 'month', '7d', or '30d'. Defaults to 'day' (optional)
+variable: disposition to display. Allowed values are 'totalCalls', 'abandon', 'complete', 'exitEmpty', 'exitTimeout', 'optOut', or 'transfer'
 widgetTitle: Title to display in the widget (optional)
 ```
 
