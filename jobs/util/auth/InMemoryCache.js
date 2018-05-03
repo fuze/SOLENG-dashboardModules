@@ -1,13 +1,13 @@
 const AuthCacheEntry = require('./AuthCacheEntry').default;
-const cacheProp = new Symbol('cache');
-const validityProp = new Symbol('validity');
-const gatherKeysToDelete = new Symbol('gatherKeysToDel');
-const singleton = new Symbol();
-const singletonEnforcer = new Symbol();
+const cacheProp = Symbol('cache');
+const validityProp = Symbol('validity');
+const gatherKeysToDelete = Symbol('gatherKeysToDel');
+const singleton = Symbol();
+const singletonEnforcer = Symbol();
 
 const purgeExecutionInterval = 1000 * 60 * 60;
 
-export default class InMemoryCache {
+class InMemoryCache {
   constructor(enforcer) {
     if (enforcer !== singletonEnforcer) {
       throw new Error('Cannot construct a singleton object');
@@ -51,5 +51,9 @@ export default class InMemoryCache {
     const toDelKeys = this[gatherKeysToDelete]();
     toDelKeys.forEach(keyToDel => this[cacheProps].delete(keyToDel));
   }
+}
+
+module.exports = {
+  InMemoryCache,
 }
  

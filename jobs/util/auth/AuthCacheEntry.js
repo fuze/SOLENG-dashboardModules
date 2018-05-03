@@ -1,11 +1,11 @@
-const userProp = new Symbol('username');
-const tokenProp = new Symbol('token');
-const timestampProp = new Symbol('timestamp');
-const validityProp = new Symbol('validity');
+const userProp = Symbol('username');
+const tokenProp = Symbol('token');
+const timestampProp = Symbol('timestamp');
+const validityProp = Symbol('validity');
 
 const defaultValidity = 1000 * 60 * 60 * 24 * 7 * 30;
  
-export default class AuthCacheEntry {
+class AuthCacheEntry {
   constructor(username, token, validity = defaultValidity) {
     if (!username || !token) throw new Error ('No username or token set!');
 
@@ -23,7 +23,7 @@ export default class AuthCacheEntry {
   }
 
   set timestamp (timestamp) {
-    if (typeof timestamp !== 'Number') {
+    if (typeof timestamp !== 'number') {
       throw new Error('Invalid timestamp provided');
     }
 
@@ -31,10 +31,6 @@ export default class AuthCacheEntry {
   }
 
   get timestamp() {
-    if (!this[timestampProp]) {
-      throw new Error('No timestamp set yet.');
-    }
-
     return this[timestampProp];
   }
 
@@ -46,4 +42,8 @@ export default class AuthCacheEntry {
     const expireTimestamp = (new Date().getTime() - this[validityProp]);
     return this[timestampProp] > expireTimestamp;
   }
+}
+
+module.exports = {
+  AuthCacheEntry,
 }
