@@ -53,7 +53,8 @@ module.exports = {
 
      */
 
-    var logger = dependencies.logger;
+    const logger = dependencies.logger;
+    const request = dependencies.easyRequest;
 
     /*
 
@@ -83,7 +84,7 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-    let jobConfig = { 
+    const jobConfig = { 
       "job": "callData",
       "interval": config.interval,
       "tenant": config.tenant,
@@ -91,10 +92,16 @@ module.exports = {
       "timeRange": config.timeRange,
       "department": config.department
     }
-    const responseCache = require("../util/responseCache.js")
-    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
-    let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
-    if (cachedResponse){ //use cached response
+    const responseCache = require("../util/responseCache.js");
+
+    if (global.cachedWallboardResponses === undefined) {
+      global.cachedWallboardResponses = [] 
+    }
+
+    const cachedResponse =
+      responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval);
+
+    if (cachedResponse) { //use cached response
       jobCallback(null, {
         response: cachedResponse, 
         title: config.widgetTitle, 
@@ -102,17 +109,21 @@ module.exports = {
         sortValue: config.sortValue,
         ascending: config.ascending,
         displayColumns: config.displayColumns
-      })
-    }else{ //no cached response found
-      let authName = config.authName
-      if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password || !config.globalAuth[authName].appToken){
-        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+      });
+    } else { //no cached response found
+      const authName = config.authName;
+      if (
+        !config.globalAuth ||
+        !config.globalAuth[authName] ||
+        !config.globalAuth[authName].username ||
+        !config.globalAuth[authName].password ||
+        !config.globalAuth[authName].appToken) {
+        throw('no credentials found. Please check global authentication file (usually config.globalAuth)');
       }
 
-      const username = config.globalAuth[authName].username
-      const password = config.globalAuth[authName].password
-      const appToken = config.globalAuth[authName].appToken
+      const username = config.globalAuth[authName].username;
+      const password = config.globalAuth[authName].password;
+      const appToken = config.globalAuth[authName].appToken;
 
       try {
         const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
@@ -126,7 +137,7 @@ module.exports = {
               }
               jobCallback(null, {title: config.widgetTitle, response: callData, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending, displayColumns: config.displayColumns})
             } catch (err) {
-              console.log(err)
+              logger.error(err);
               jobCallback(err, null)
             }
           });
@@ -138,151 +149,140 @@ module.exports = {
 
 
     function getUserList(wardenToken, callback){
-      try{
-        if (!wardenToken){
-          throw 'Error: no warden token'
+      try {
+
+        if (!wardenToken) {
+          throw 'Error: no warden token';
         }
-        let usersEndpointURL = "https://rest.data.fuze.com/users"
-        if (typeof config.department != 'undefined'){
-          usersEndpointURL += "?dept=" + config.department
+
+        const usersEndpointURL = "https://rest.data.fuze.com/users";
+        if (typeof config.department != 'undefined') {
+          usersEndpointURL += "?dept=" + config.department;
         }
-        let options = {
+
+        const options = {
           url: usersEndpointURL,
           headers : {
             Authorization: "Bearer " + wardenToken
           }
-        }
-        dependencies.easyRequest.JSON(options, (err, response) => {
+        };
+
+        request.JSON(options, (err, response) => {
           if (!err){
-            callback(response)
+            callback(response);
           } else {
-            console.log(err)
-            callback(null)
+            logger.error(err);
+            callback(null);
           }
-        })
+        });
       } catch (err){
-        console.log(err)
-        callback(null)
+        logger.error(err);
+        callback(null);
       }
     }
 
     function getCallData(wardenToken, callback, max, storedResults, first){
       try {
-        if (!wardenToken){
-          throw 'Error: no warden token'
+        
+        if (!wardenToken) {
+          throw 'Error: no warden token';
         }
-        if (!max){var max=1000}
-        if (!storedResults){var storedResults=[]}
-        let startTime = getStartTime(config.timeRange)
-        let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max
-        if (typeof config.department != 'undefined'){
-          endpointURL += "&dept=" + config.department
+
+        if (!max){
+          var max = 1000;
         }
-        if (first){
-          endpointURL += "&first=" + first
+
+        if (!storedResults) {
+          var storedResults = [];
         }
+
+        let startTime = getStartTime(config.timeRange);
+        let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
+        if (typeof config.department != 'undefined') {
+          endpointURL += "&dept=" + config.department;
+        }
+
+        if (first) {
+          endpointURL += "&first=" + first;
+        }
+
         let options = {
           url: endpointURL,
           headers : {
             Authorization: "Bearer " + wardenToken
           }
-        }
-        dependencies.easyRequest.JSON(options, (err, response) => {
+        };
+
+        request.JSON(options, (err, response) => {
           if (err){
-            console.log(err)
-            callback(null)
+            console.log(err);
+            callback(null);
           } else {
-            if (response.calls.length < max){  //if the results are shorter than the max, there are no more results to grab
-              if (typeof first != 'undefined'){
-                response.calls = response.calls.splice(1) //if we specified a first element, we will need to remove it from our results
+            // if the results are shorter than the max, there are no more results to grab
+            if (response.calls.length < max) {  
+              if (typeof first != 'undefined') {
+                // if we specified a first element, we will need to remove it from our results
+                response.calls = response.calls.splice(1); 
               }
-              Array.prototype.push.apply(storedResults, response.calls)
-              callback({calls: storedResults})
+              
+              Array.prototype.push.apply(storedResults, response.calls);
+              callback({calls: storedResults});
             } else {
-              if (typeof first != 'undefined'){
-                response.calls = response.calls.splice(1) //if we specified a first element, we will need to remove it from our results
+              if (typeof first != 'undefined') {
+                //if we specified a first element, we will need to remove it from our results
+                response.calls = response.calls.splice(1); 
               }
-              Array.prototype.push.apply(storedResults, response.calls)
-              let lastId = response.calls[response.calls.length-1].linkedId //get the linkedId of the last call we got to use as the 'first'
-              getCallData(wardenToken, callback, max, storedResults, lastId)
+              Array.prototype.push.apply(storedResults, response.calls);
+              //get the linkedId of the last call we got to use as the 'first'
+              const lastId = response.calls[response.calls.length - 1].linkedId; 
+              getCallData(wardenToken, callback, max, storedResults, lastId);
             }
           }
         })
       } catch (err) {
-        console.log(err)
-        callback(null)
+        logger.error(err);
+        callback(null);
       }
     }
 
     function addNameToCall(call, listOfUsers){
-      if (typeof call.to.userId == 'string'){
-        let userObject = findUser(call.to.userId, listOfUsers)
-        if (typeof userObject != 'undefined'){
-          call.to.firstName = userObject.firstName
-          call.to.lastName = userObject.lastName
+      if (typeof call.to.userId == 'string') {
+        const userObject = listOfUsers.find(user => user.userId == call.to.userId);
+        if (typeof userObject != 'undefined') {
+          call.to.firstName = userObject.firstName;
+          call.to.lastName = userObject.lastName;
         }
       }
-      if (typeof call.from.userId == 'string'){
-        let userObject = findUser(call.from.userId, listOfUsers)
-        if (typeof userObject != 'undefined'){
-          call.from.firstName = userObject.firstName
-          call.from.lastName = userObject.lastName
+      if (typeof call.from.userId == 'string') {
+        const userObject = listOfUsers.find(user => user.userId == call.to.userId);
+        if (typeof userObject != 'undefined') {
+          call.from.firstName = userObject.firstName;
+          call.from.lastName = userObject.lastName;
         }
       }
     }
     
-    function findUser(userId, listOfUsers){
-      let userObject = listOfUsers.find(function(user){
-        return(user.userId == userId)
-      })
-      return(userObject)
-    }
-    
-    
-    
-    function getStartTime(range){
-      if (range != "day" && range != "week" && range != "month"){
-        throw "timeRange must either be 'day', 'week', 'month', '7d', or '30d'"
+    function getStartTime(range) {
+      if (range != "day" && range != "week" && range != "month") {
+        throw "timeRange must either be 'day', 'week', 'month', '7d', or '30d'";
       }
-      let startTime = new Date()
-      startTime.setMinutes(0)
-      startTime.setHours(0)
-      startTime.setSeconds(0)
-      startTime.setMilliseconds(0)
+      const startTime = new Date();
+      startTime.setMinutes(0);
+      startTime.setHours(0);
+      startTime.setSeconds(0);
+      startTime.setMilliseconds(0);
+
       if (range == "week") {
-        startTime.setDate(startTime.getDate()-startTime.getDay())
-      } else if (range == "month"){
-        startTime.setDate(1)
-      } else if (range == "7d"){
-        startTime.setDate(startTime.getDate-7)
-      } else if (range == "30d"){
-        startTime.setDate(startTime.getDate-30)
+        startTime.setDate(startTime.getDate() - startTime.getDay());
+      } else if (range == "month") {
+        startTime.setDate(1);
+      } else if (range == "7d") {
+        startTime.setDate(startTime.getDate - 7);
+      } else if (range == "30d") {
+        startTime.setDate(startTime.getDate - 30);
       }
       
-      return (startTime.toJSON())
+      return (startTime.toJSON());
     }
-    
-    function getUserCalls(userId, callList){ //returns list of calls from that user
-      result = callList.filter((call) => {
-        if (call.from.userId == userId){return true}else{return false}
-      })
-      return (result)
-    }
-
-    function getTotalTime (callList){
-      totalTime = 0
-      for (thisCall in callList){
-        totalTime += getCallTime(callList[thisCall])
-      }
-      return (totalTime)
-    }
-
-    function getCallTime(call){
-      let startTime = new Date(call.startedAt)
-      let endTime = new Date(call.endedAt)
-      let calltime = Math.round((endTime - startTime) / 1000)
-      return (calltime)  //returns call durration in seconds 
-    }
-
   }
 };
