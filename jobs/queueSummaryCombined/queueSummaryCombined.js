@@ -82,40 +82,61 @@ module.exports = {
      as the first parameter, and the widget's data as the second parameter.
 
      */
-    try {
-      let authName = config.authName
-      if (!config.globalAuth || !config.globalAuth[authName] ||
-        !config.globalAuth[authName].username || !config.globalAuth[authName].password){
-        throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
-      }
-
-      let username = config.globalAuth[authName].username
-      let password = config.globalAuth[authName].password
-      var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
-      var responseList = []
-      for (i in config.queue) {
-        var options = {
-          url : baseURL.replace("$QUEUE", config.queue[i]),
-          headers : {"username" : username, "password" : password}
-        }
-        dependencies.easyRequest.JSON(options, function (err, response) {
-          try{
-            responseList.push(response)
-            if (responseList.length == config.queue.length) {
-              combineResponses(null, responseList)
-            }
-          } catch (err){
-            combinedResponses(err, null)
-          }
-        });
-      }
-    } catch (err) {
-      console.log(err)
-      jobCallback(err, null)
+    let jobConfig = { 
+      "job": "queueSummaryCombined",
+      "interval": config.interval,
+      "queue": config.queue,
+      "authName": config.authName
     }
 
-    function combineResponses (err, responseList) {
-      var combinedResponse = {}  //init values
+    const responseCache = require("../util/responseCache.js")
+    if(global.cachedWallboardResponses === undefined) { global.cachedWallboardResponses = [] } // init global.cachedWallboardResponses
+    let cachedResponse = responseCache.checkCache(jobConfig, global.cachedWallboardResponses, config.interval) //check if we have a cahced response
+    if (cachedResponse){ //use cached response
+      jobCallback(null, {
+        response: cachedResponse, 
+        title: config.widgetTitle,
+        variable: config.variable,
+        queue: config.queue, 
+        threshold: config.threshold
+      })
+    }else{ //no cached response found
+      try {
+        let authName = config.authName
+        if (!config.globalAuth || !config.globalAuth[authName] ||
+          !config.globalAuth[authName].username || !config.globalAuth[authName].password){
+          throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
+        }
+
+        let username = config.globalAuth[authName].username
+        let password = config.globalAuth[authName].password
+        var baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
+        var responseList = []
+        for (i in config.queue) {
+          var options = {
+            url : baseURL.replace("$QUEUE", config.queue[i]),
+            headers : {"username" : username, "password" : password}
+          }
+          dependencies.easyRequest.JSON(options, function (err, response) {
+            try{
+              responseList.push(response)
+              if (responseList.length == config.queue.length) {
+                let combinedResponse = combineResponses(null, responseList)
+                global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, combinedResponse)
+                jobCallback(null, {title: config.widgetTitle, queue: config.queue, response: combinedResponse, threshold: config.threshold});
+              }
+            } catch (err){
+              console.log(err)
+            }
+          });
+        }
+      } catch (err) {
+        console.log(err)
+        jobCallback(err, null)
+      }
+
+      function combineResponses (err, responseList) {
+        var combinedResponse = {}  //init values
         try {
           if(err){throw err}
           combinedResponse.longestholdtime = 0
@@ -125,12 +146,12 @@ module.exports = {
               combinedResponse.longestholdtime = responseList[i].longestholdtime
             }
           }
-          jobCallback(null, {title: config.widgetTitle, queue: config.queue, response: combinedResponse, threshold: config.threshold});
+          return (combinedResponse)
         } catch (err){
           console.log(err)
           jobCallback(err,null)
         }
-      });
+      }
     }
   }
 };
