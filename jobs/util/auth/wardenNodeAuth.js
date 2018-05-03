@@ -1,7 +1,7 @@
 const url = require('url');
 const https = require('https');
-const InMemoryCache  = require('./InMemoryCache').default;
-const AuthCacheEntry = require('./AuthCacheEntry').default;
+const { InMemoryCache }  = require('./InMemoryCache');
+const { AuthCacheEntry } = require('./AuthCacheEntry');
 
 const wardenEndpoint = 'https://warden.thinkingphones.com/api/v1/users/';
 
@@ -14,10 +14,18 @@ function cachedWardenAuth(appToken, user, pass) {
     } else {
       try {
         const result = await wardenAuth(appToken, user, pass);
-        InMemoryCache.instance.set(
-          'user',
-          new AuthCacheEntry(user, result.data.grant.token)
-        );
+        
+        if (!result || !result.data || !result.data.grant || !result.data.grant.token) {
+            reject('Could not authenticate');
+        } else {
+          InMemoryCache.instance.set(
+            user,
+            new AuthCacheEntry(user, result.data.grant.token)
+          );
+
+          resolve(InMemoryCache.instance.get(user).token);
+        }
+
       } catch (e) {
         reject(e);
       }
