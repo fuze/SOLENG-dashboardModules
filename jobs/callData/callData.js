@@ -127,7 +127,7 @@ module.exports = {
 
       try {
         const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
-        const userToken = await wardenAuth(appToken, username, password);
+        const wardenToken = await wardenAuth(appToken, username, password);
 
         getUserList(wardenToken, (userList) => {
           getCallData(wardenToken, (callData) => {
@@ -215,7 +215,7 @@ module.exports = {
 
         request.JSON(options, (err, response) => {
           if (err){
-            console.log(err);
+            logger.error(err);
             callback(null);
           } else {
             // if the results are shorter than the max, there are no more results to grab
@@ -263,9 +263,15 @@ module.exports = {
     }
     
     function getStartTime(range) {
-      if (range != "day" && range != "week" && range != "month") {
+      if (range &&
+        range !== 'day' &&
+        range !== 'week' &&
+        range !== 'month' &&
+        range !== '7d' &&
+        range !== '30d') {
         throw "timeRange must either be 'day', 'week', 'month', '7d', or '30d'";
       }
+
       const startTime = new Date();
       startTime.setMinutes(0);
       startTime.setHours(0);
