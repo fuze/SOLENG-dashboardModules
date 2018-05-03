@@ -29,7 +29,7 @@ widget = {
       case 'optOut':
         thisVariable = filterCalls("OptOut", response.queueCalls).length
         break;
-      case 'Transfer':
+      case 'transfer':
         thisVariable = filterCalls("Transfer", response.queueCalls).length
         break;
       default:
