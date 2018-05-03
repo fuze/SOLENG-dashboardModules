@@ -39,7 +39,7 @@ module.exports = {
    * @param dependencies
    * @param jobCallback
    */
-  onRun: function (config, dependencies, jobCallback) {
+  onRun: async function (config, dependencies, jobCallback) {
 
     /*
      1. USE OF JOB DEPENDENCIES
@@ -118,7 +118,10 @@ module.exports = {
       let password = config.globalAuth[authName].password
       const appToken = config.globalAuth[authName].appToken
 
-      getToken(appToken, username, password, (wardenToken) => {
+      try {
+        const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
+        const wardenToken = await wardenAuth(appToken, username, password);
+
         getCallData(wardenToken, (callData) => {
           try {
             global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, callData)
@@ -130,25 +133,8 @@ module.exports = {
             jobCallback(err, null);
           }
         });
-      });
-    }
-
-    function getToken(appToken, username, password, callback){
-      if(global[tenant] && global[tenant].wardenToken !== undefined){
-        callback(global[tenant].wardenToken);
-      } else {
-        try{
-          const wardenAuth = require("../util/wardenNodeAuth.js").wardenAuth
-          wardenAuth(appToken, username, password, (response) => {
-            let wardenToken = response.data.grant.token
-            global[tenant] = {}
-            global[tenant].wardenToken = wardenToken
-            callback(wardenToken)
-          });
-        } catch(err) {
-          console.log(err)
-          callback(null)
-        }
+      } catch (e) {
+        logger.error(e);
       }
     }
 
