@@ -1,4 +1,3 @@
-const AuthCacheEntry = require('./AuthCacheEntry').default;
 const cacheProp = Symbol('cache');
 const validityProp = Symbol('validity');
 const gatherKeysToDelete = Symbol('gatherKeysToDel');
