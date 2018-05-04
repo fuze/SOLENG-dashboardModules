@@ -2,15 +2,16 @@ const https = require('https');
 const url = require('url');
 const { CacheOperator } = require('../CacheOperator');
 
-async function getCachedPeerOwner(credentials, peers) {
-  return new Promise((resolve) => {
+function getCachedPeerOwner(credentials, peers) {
+  return new Promise(async (resolve) => {
     const cache = CacheOperator.create();
 
     const cachedPeers =
-      peers.filter(
-        peer => cache.getPeerInfo(peer) !== undefined && cache.getPeerInfo(peer).stillValid()
-      );
-    
+      peers.map((peer) => {
+        const found = cache.getPeerInfo(peer);
+        return found && found.stillValid() ? found.value : peer;
+      });
+
     const nonCachedPeers =
       peers.filter(
         peer => cache.getPeerInfo(peer) === undefined || !cache.getPeerInfo(peer).stillValid()
@@ -19,23 +20,22 @@ async function getCachedPeerOwner(credentials, peers) {
     const apiResponses = await getPeerOwner(credentials, nonCachedPeers);
     apiResponses.forEach(response => cache.setPeerInfo(response.originalPeerId, response));
 
-    resolve(cachedPeers.concat(nonCachedPeers))
+    resolve(cachedPeers.concat(apiResponses));
   });
 }
 
-async function getPeerOwner(credentials, peers) {
-  return new Promise((resolve) => {
+function getPeerOwner(credentials, peers) {
+  return new Promise(async (resolve) => {
     const promises = peers.map(peer => getPeerInfo(credentials, peer));
     const results = await Promise.all(promises);
 
-    const peerOwners = results.filter(result => typeof result !== 'error')
-      .map(result => {
-        return {
-          "peer" : result.response.peers[0].peerName, 
-          "displayName" : result.response.peers[0].user.displayName,
-          "originalPeerId" : result.originalPeerId
-        }
-      });
+    const peerOwners = results.filter(result => typeof result !== 'error').map(result => {
+      return {
+        "peer" : result.response.peers[0].peerName, 
+        "displayName" : result.response.peers[0].user.displayName,
+        "originalPeerId" : result.originalPeerId
+      }
+    });
 
     resolve(peerOwners);
   });
@@ -43,6 +43,8 @@ async function getPeerOwner(credentials, peers) {
 
 function getPeerInfo(credentials, peer) {
   return new Promise((resolve) => {
+    const originalPeerId = peer;
+
     //strip SIP identifier
     if (peer.substring(0,4) === 'SIP/') { 
       peer = peer.substring(4);
@@ -65,7 +67,7 @@ function getPeerInfo(credentials, peer) {
           if (response.peers[0] && response.peers[0].user && response.peers[0].user.displayName) {
             resolve({
               response,
-              originalPeerId: peer
+              originalPeerId
             });
           } else {
             resolve(badResponse());
