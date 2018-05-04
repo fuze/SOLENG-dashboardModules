@@ -3,7 +3,7 @@ const userProp = Symbol('username');
 const tokenProp = Symbol('token');
 
 class AuthCacheEntry extends CacheEntry {
-  constructor(username, token, validity = defaultValidity) {
+  constructor(username, token, validity) {
     super(validity);
 
     if (!username || !token) throw new Error ('No username or token set!');
