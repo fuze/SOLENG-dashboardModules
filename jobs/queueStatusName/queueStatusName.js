@@ -37,7 +37,7 @@ module.exports = {
    * @param dependencies
    * @param jobCallback
    */
-  onRun: async function (config, dependencies, jobCallback) {
+  onRun: function (config, dependencies, jobCallback) {
 
     /*
      1. USE OF JOB DEPENDENCIES
@@ -121,7 +121,7 @@ module.exports = {
           url : baseURL.replace("$QUEUE", config.queue),
           headers : {"username" : username, "password" : password}
         }
-        dependencies.easyRequest.JSON(options, function (err, response) {
+        dependencies.easyRequest.JSON(options, async function (err, response) {
           if (!err){
             var peerList = []
             for (i in response.members){ //pull the peer names from the member list to give to PeerOwner
