@@ -1,5 +1,5 @@
 const cacheProp = Symbol('cache');
-const { InMemoryCache } = require('./auth/InMemoryCache');
+const { InMemoryCache } = require('./cache/InMemoryCache');
 const { GenericCacheEntry } = require('./synapse/GenericCacheEntry');
 
 class CacheOperator {
@@ -16,7 +16,7 @@ class CacheOperator {
   }
 
   getPeerInfo(peer) {
-    return this[cacheProp].get(`peer_${peer}`).value;
+    return this[cacheProp].get(`peer_${peer}`);
   }
 
   setPeerInfo(peer, value) {

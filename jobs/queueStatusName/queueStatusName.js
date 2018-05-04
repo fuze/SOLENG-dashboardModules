@@ -134,7 +134,7 @@ module.exports = {
             }
             if (peerList.length > 0){
               const peerOwners = await getPeerOwner(credentials, peerList);
-              
+
               for (i in response.members){ //loop through the list of mebers to see if we found a matching name from peerOwners.
                 for (n in peerOwners){
                   if (response.members[i].name.substring(4).toLowerCase() == peerOwners[n].peer){ //if the name matches, replace it.
