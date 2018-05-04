@@ -1,6 +1,7 @@
 const url = require('url');
 const https = require('https');
 const { CacheOperator }  = require('../CacheOperator');
+const { AuthCacheEntry } = require('./AuthCacheEntry');
 
 const wardenEndpoint = 'https://warden.thinkingphones.com/api/v1/users/';
 
