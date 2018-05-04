@@ -37,7 +37,7 @@ module.exports = {
    * @param dependencies
    * @param jobCallback
    */
-  onRun: function (config, dependencies, jobCallback) {
+  onRun: async function (config, dependencies, jobCallback) {
 
     /*
      1. USE OF JOB DEPENDENCIES
@@ -114,7 +114,7 @@ module.exports = {
         let username = config.globalAuth[authName].username
         let password = config.globalAuth[authName].password
 
-        const getPeerOwner = require("../util/peerOwner.js").getPeerOwner
+        const getPeerOwner = require("../util/synapse/peerOwner.js").getCachedPeerOwner;
 
         baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/status"
         var options = {
@@ -133,17 +133,18 @@ module.exports = {
               tenant: config.tenant
             }
             if (peerList.length > 0){
-              getPeerOwner(credentials, peerList, function(peerOwners){
-                for (i in response.members){ //loop through the list of mebers to see if we found a matching name from peerOwners.
-                  for (n in peerOwners){
-                    if (response.members[i].name.substring(4).toLowerCase() == peerOwners[n].peer){ //if the name matches, replace it.
-                      response.members[i].name = (peerOwners[n].displayName)
-                    }
+              const peerOwners = await getPeerOwner(credentials, peerList);
+              
+              for (i in response.members){ //loop through the list of mebers to see if we found a matching name from peerOwners.
+                for (n in peerOwners){
+                  if (response.members[i].name.substring(4).toLowerCase() == peerOwners[n].peer){ //if the name matches, replace it.
+                    response.members[i].name = (peerOwners[n].displayName)
                   }
                 }
-                global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, response)
-                jobCallback(err, {title: config.widgetTitle, queue: config.queue, response: response, threshold: config.threshold});
-              });
+              }
+
+              global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, response)
+              jobCallback(err, {title: config.widgetTitle, queue: config.queue, response: response, threshold: config.threshold});
             } else {
               nullResponse("Error: Peer List is empty")
             }
