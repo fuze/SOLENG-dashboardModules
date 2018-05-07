@@ -134,14 +134,7 @@ module.exports = {
             }
             if (peerList.length > 0){
               const peerOwners = await getPeerOwner(credentials, peerList);
-
-              for (i in response.members){ //loop through the list of mebers to see if we found a matching name from peerOwners.
-                for (n in peerOwners){
-                  if (response.members[i].name.substring(4).toLowerCase() == peerOwners[n].peer){ //if the name matches, replace it.
-                    response.members[i].name = (peerOwners[n].displayName)
-                  }
-                }
-              }
+              response.members.forEach(member => translate(member, peerOwners));
 
               global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, response)
               jobCallback(err, {title: config.widgetTitle, queue: config.queue, response: response, threshold: config.threshold});
@@ -155,6 +148,12 @@ module.exports = {
       }catch(err){
         nullResponse(err)
       }
+    }
+
+    function translate(member, peerOwners) {
+      const memberName = member.name.substring(4).toLowerCase();
+      const peerInfo = peerOwners.find(peerOwner => peerOwner.peer === memberName);
+      member.name = peerInfo ? peerInfo.displayName : member.name;
     }
 
     function nullResponse (err){
