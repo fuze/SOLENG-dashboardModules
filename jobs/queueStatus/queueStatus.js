@@ -99,7 +99,8 @@ module.exports = {
       jobCallback(null, {
         response: cachedResponse, 
         title: config.widgetTitle, 
-        variable: config.variable, 
+        variable: config.variable,
+        tint: config.tint,
         queue: config.queue, 
         threshold: config.threshold
       })
@@ -125,7 +126,8 @@ module.exports = {
           jobCallback(null, {
             response: response, 
             title: config.widgetTitle, 
-            variable: config.variable, 
+            variable: config.variable,
+            tint: config.tint,
             queue: config.queue, 
             threshold: config.threshold
           })
