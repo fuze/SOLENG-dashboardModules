@@ -44,6 +44,9 @@ widget = {
       $('.widget-title', el).css("color", "$brand-danger-title");
     } else {
       $(el).parent().css("background-color", "$widget-background-color");
+      if (data.tint){
+        $(el).parent().css("filter", "brightness("+ data.tint +")");
+      }
       $('.content', el).css("color", "$widget-body-text-color");
     }
 
