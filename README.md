@@ -66,11 +66,10 @@ Shows the number of abandoned calls in a queue or group of queues for the day (s
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -81,11 +80,10 @@ Shows the average hold time for a queue or group of queues. Time is displayed in
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -96,11 +94,10 @@ Shows the number of calls that have been answered by agents in a queue or group 
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -111,11 +108,10 @@ Shows the number of calls that are currently waiting to be answered in a queue o
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -126,11 +122,10 @@ Shows the number of agents that are currently logged into a queue or group of qu
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -141,11 +136,10 @@ Shows the number of agents who are logged into a queue or group of queues that a
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -156,11 +150,10 @@ Shows the number of available (unpaused, not-on-call) agents in a queue or group
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -170,14 +163,14 @@ widgetTitle: Title to display in the widget (optional)
 Shows a list of agents logged into a queue, their name, status, and number of calls taken across all queues. 
 
 #### Associated job:
-- queueStatusName
+- queueStatus
 
 #### Special User Permissions required:
 - UC Health
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 tenant: customer code in Portal
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
@@ -189,11 +182,10 @@ Shows the number of calls that met the queue or group of queue’s SLA guideline
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -204,11 +196,10 @@ Shows the percent of calls in a queue or group of queue’s that meet the define
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
@@ -234,11 +225,10 @@ A visual representation of availability and demand in a queue using bar charts.
 
 #### Associated job:
 - queueStatus
-- queueStatusCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 widgetTitle: Title to display in the widget (optional)
 ```
@@ -293,4 +283,15 @@ displayColumns: Array of columns to display. Allowed values are 'totalCalls', 't
 sortValue: the value to used to order the list. Allowed values are 'firstName', 'lastName', 'totalCalls', 'totalTalkTime', 'averageTalkTime', 'inbound', 'outbound', 'internal', and 'platform'
 ascending: boolean that determines the direction of the sorting
 pageSize: the number of results to display at once
+```
+
+### Text Widget:
+A widget that displays the defined text.
+
+#### Associated job:
+- returnsNull
+
+#### Config:
+```
+text: (string) Text to display
 ```
