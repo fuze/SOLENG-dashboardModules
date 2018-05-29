@@ -210,11 +210,10 @@ Shows the highest current hold time for a queue or group of queues. Time is disp
 
 #### Associated job:
 - queueSummary
-- queueSummaryCombined
 
 #### Config:
 ```
-queue: key of the queue or queues you would like to monitor
+queue: (string or array of strings) key of the queue or queues you would like to monitor
 authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
 threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
