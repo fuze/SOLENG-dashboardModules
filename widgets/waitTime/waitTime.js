@@ -57,14 +57,17 @@ widget = {
 
 
     function displayData(displayValue,waitTime) {
-      if (data.threshold && waitTime>=data.threshold) {
-        $(el).parent().css("background-color", "#FF0000");
-        $('.content', el).css("color", "#181818");
-        $('.widget-title', el).css("color", "#454545");
-      } else {
-        $(el).parent().css("background-color", "#181818");
-        $('.content', el).css("color", "#9b9b9b");
+    if (data.threshold && parseInt(displayValue)<=data.threshold) {
+      $(el).parent().css("background-color", "$brand-danger");
+      $('.content', el).css("color", "$brand-danger-content");
+      $('.widget-title', el).css("color", "$brand-danger-title");
+    } else {
+      $(el).parent().css("background-color", "$widget-background-color");
+      if (data.tint){
+        $(el).parent().css("filter", "brightness("+ data.tint +")");
       }
+      $('.content', el).css("color", "$widget-body-text-color");
+    }
       $('.content', el).html(displayValue);
     }
   }
