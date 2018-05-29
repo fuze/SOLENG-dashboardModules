@@ -20,7 +20,9 @@ module.exports = {
     if (cachedResponse){ //use cached response
       jobCallback(null, {
         response: cachedResponse, 
-        title: config.widgetTitle, 
+        title: config.widgetTitle,
+        variable: config.variable,
+        tint: config.tint, 
         queue: config.queue, 
         threshold: config.threshold
       })
@@ -44,7 +46,7 @@ module.exports = {
         try {
           fullResponse.then(function(result){
             global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, result)
-            jobCallback(null, {title: config.widgetTitle, queue: config.queue, response: result, threshold: config.threshold});
+            jobCallback(null, {title: config.widgetTitle, variable: config.variable, tint: config.tint, queue: config.queue, response: result, threshold: config.threshold});
           })
         } catch (err) {
           nullResponse(err)
