@@ -102,12 +102,6 @@ module.exports = {
         threshold: config.threshold
       })
     }else{ //no cached response found
-      let fullResponse = {};
-      fullResponse.title     = config.widgetTitle;
-      fullResponse.variable  = config.variable;
-      fullResponse.queue     = config.queue;
-      fullResponse.response  = {};
-      fullResponse.threshold = config.threshold;
 
       try {
         let authName = config.authName
@@ -116,23 +110,75 @@ module.exports = {
           throw('no credentials found. Please check global authentication file (usually config.globalAuth)')
         }
 
-        let username = config.globalAuth[authName].username
-        let password = config.globalAuth[authName].password
-
-        baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
-        var options = {
-          url : baseURL.replace("$QUEUE", config.queue),
-          headers : {"username" : username, "password" : password}
+        let queueList
+        if (typeof config.queue === 'string'){ //alows for single queue configs to work
+          queueList = [config.queue]
+        } else {
+          queueList = config.queue
         }
-        dependencies.easyRequest.JSON(options, function (err, response) {
-          global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, response)
-          fullResponse.response = response;
-          jobCallback(null, fullResponse);
-        });
+        let fullResponse = makeAllRequests(queueList)
+        try {
+          fullResponse.then(function(result){
+            global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, result)
+            jobCallback(null, {title: config.widgetTitle, variable: config.variable, tint: config.tint, queue: config.queue, response: result, threshold: config.threshold});
+          })
+        } catch (err) {
+          jobCallback(err,null)
+        }
       } catch (err) {
         console.log(err)
         jobCallback(err,null)
       }
     }
+
+    function makeAllRequests(queueList) {
+      return new Promise(async function(resolve, reject) {
+        const promises = [];
+        queueList.forEach((queue) => {
+          promises.push(createRequestPromise(queue));
+        });
+        try {
+          const results = await Promise.all(promises);
+          resolve(combineResponses(results));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+
+    function createRequestPromise(queue) {
+      let baseURL = "https://synapse.thinkingphones.com/tpn-webapi-broker/services/queues/$QUEUE/summary"
+      return new Promise((resolve, reject) => {
+        var options = {
+          url : baseURL.replace("$QUEUE", queue),
+          headers : {"username" : config.globalAuth[config.authName].username, "password" : config.globalAuth[config.authName].password}
+        }
+        dependencies.easyRequest.JSON(options, function (err, response) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(response);
+          }
+        });
+      });
+    }
+
+    function combineResponses (responseList) {
+      var combinedResponse = {}  //init values
+      try {
+        combinedResponse.longestholdtime = 0
+
+        for (i in responseList) {
+          if (combinedResponse.longestholdtime < responseList[i].longestholdtime) {
+            combinedResponse.longestholdtime = responseList[i].longestholdtime
+          }
+        }
+        return (combinedResponse)
+      } catch (err){
+        console.log(err)
+        jobCallback(err,null)
+      }
+    }
+
   }
 };
