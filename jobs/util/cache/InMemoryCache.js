@@ -16,8 +16,8 @@ class InMemoryCache {
 
     this[gatherKeysToDelete] = function() {
       const toDelKeys = [];
-      for (let [key, value] of this[cacheProps]) {
-        if (!this[cacheProps][key].stillValid()) {
+      for (let [key, value] of this[cacheProp]) {
+        if (!this[cacheProps].get(key).stillValid()) {
           toDelKeys.push(key);
         }
       }
@@ -48,7 +48,7 @@ class InMemoryCache {
 
   purge() {
     const toDelKeys = this[gatherKeysToDelete]();
-    toDelKeys.forEach(keyToDel => this[cacheProps].delete(keyToDel));
+    toDelKeys.forEach(keyToDel => this[cacheProp].delete(keyToDel));
   }
 }
 
