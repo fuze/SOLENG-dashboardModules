@@ -17,7 +17,7 @@ class InMemoryCache {
     this[gatherKeysToDelete] = function() {
       const toDelKeys = [];
       for (let [key, value] of this[cacheProp]) {
-        if (!this[cacheProps].get(key).stillValid()) {
+        if (!this[cacheProp].get(key).stillValid()) {
           toDelKeys.push(key);
         }
       }
