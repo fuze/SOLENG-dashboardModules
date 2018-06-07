@@ -294,3 +294,26 @@ A widget that displays the defined text.
 ```
 text: (string) Text to display
 ```
+## Customizing apperance
+
+### Theme file
+You can change the appearance of your wallboard by editing the values in the theme file. By default the theme file can be found in the root of your wallboard directory under the themes/default/ directory.
+
+Below are some of variables that can be edited to effect the look and feel of the wallboard.
+
+```
+$gutter-size = 30px //the size of the gap between widgets on the dashboard
+$background-color = #FFFFFF //the background color for the dashboard
+$widget-background-color = #ebf2f9 //the background color for the widgets on the dashboard
+$widget-body-text-color = #000000 //color of the text of widgets
+$widget-body-font-size = 2em //font size for text used in some widgets
+$brand-danger = #d04437 //color used by widgets when thresholds are exceeded
+```
+
+### Tinting
+Some of the widgets we have created allow for an additional configuration option that allow the widgit color to be tinted, allowing it to stand out next to other widgets. For example, if your dashboard included a large grid of widgets and you wanted to make it easier to read across the rows of widgets, you could use tinting to make every other row slightly darker.
+
+#### Config:
+```
+"tint":"95%" //string indicating the percent to tint. Tints less than 100% will make the widget darker. Greater than 100% will make the widget lighter.
+```
