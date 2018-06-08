@@ -57,16 +57,13 @@ widget = {
 
 
     function displayData(displayValue,waitTime) {
-    if (data.threshold && parseInt(displayValue)<=data.threshold) {
-      $(el).parent().css("background-color", "$brand-danger");
-      $('.content', el).css("color", "$brand-danger-content");
-      $('.widget-title', el).css("color", "$brand-danger-title");
+    if (data.threshold && parseInt(displayValue)>=data.threshold) {
+      $(el).parent().addClass("warning");
+      $(el).addClass("warning");
     } else {
-      $(el).parent().css("background-color", "$widget-background-color");
       if (data.tint){
         $(el).parent().css("filter", "brightness("+ data.tint +")");
       }
-      $('.content', el).css("color", "$widget-body-text-color");
     }
       $('.content', el).html(displayValue);
     }

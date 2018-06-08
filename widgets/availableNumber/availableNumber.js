@@ -37,17 +37,13 @@ widget = {
 
     $('.content', el).html(displayValue); //prints the table
     $('a', el).attr('href', 'https://data.fuze.com/queues/' + data.queue + '/summary')
-
-    if (data.threshold && parseInt(displayValue)<=data.threshold) {
-      $(el).parent().css("background-color", "$brand-danger");
-      $('.content', el).css("color", "$brand-danger-content");
-      $('.widget-title', el).css("color", "$brand-danger-title");
+    if (typeof data.threshold != "undefined" && parseInt(displayValue)<=data.threshold) {
+      $(el).parent().addClass("warning");
+      $(el).addClass("warning");
     } else {
-      $(el).parent().css("background-color", "$widget-background-color");
       if (data.tint){
         $(el).parent().css("filter", "brightness("+ data.tint +")");
       }
-      $('.content', el).css("color", "$widget-body-text-color");
     }
 
 
