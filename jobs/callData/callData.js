@@ -134,6 +134,8 @@ module.exports = {
 
         getUserList(wardenToken, (userList) => {
           getCallData(wardenToken, (callData) => {
+            console.log('callData');
+            console.log(callData);
             try {
               for (call in callData.calls){
                 addNameToCall(callData.calls[call],userList.users)
@@ -220,6 +222,8 @@ module.exports = {
           const response = await request.JSON(options);
 
           // if the results are shorter than the max, there are no more results to grab
+          console.log(response.calls.length);
+          console.log(response);
           if (response.calls.length < max) {  
             if (typeof first != 'undefined') {
               // if we specified a first element, we will need to remove it from our results
