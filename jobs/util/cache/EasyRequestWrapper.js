@@ -72,6 +72,8 @@ class EasyRequestWrapper {
       console.log('Entry located, no need to fetch again...');
     }
 
+    console.log('promise');
+    console.log(promise);
     return promise;
   }
 }
