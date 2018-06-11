@@ -7,8 +7,10 @@ const updateCache = Symbol('updateCache');
 const newEntry = Symbol('newEntry');
 const addValueToCache = Symbol('addValueToCache');
 const updateEntry = Symbol('updateEntry');
+const isCached = Symbol('isCached');
 
-const DEFAULT_TTL = 1000 * 60 * 60 * 24; 
+const DEFAULT_TTL = 1000 * 60 * 60 * 24;
+const DEFAULT_CACHED = true;
 
 class EasyRequestWrapper {
   constructor(requestApi, cache) {
@@ -63,22 +65,33 @@ class EasyRequestWrapper {
 
       this[addValueToCache](url, value, validity);
     };
+
+    this[isCached] = (options) => {
+      let cached = DEFAULT_CACHED;
+
+      if (options.cached) {
+        cached = options.cached;
+      }
+
+      return cached;
+    }; 
   }
 
   JSON(options) {
-    console.log(options.url);
-    const entry = this[cacheImplementation].get(options.url);
     let promise;
-    if (!entry) {
-      const entryValue = this[newEntry](options);
-      this[addValueToCache](options.url, entryValue, options.ttl);
-      promise = this[updateCache](options, entryValue);
-    } else {
-      console.log(entry);
-      promise = entry.value.response;
-    }
 
-    console.log(promise);
+    if (this[isCached](options)) {
+      promise = this[handleRequest](options);
+    } else {
+      const entry = this[cacheImplementation].get(options.url);
+      if (!entry) {
+        const entryValue = this[newEntry](options);
+        this[addValueToCache](options.url, entryValue, options.ttl);
+        promise = this[updateCache](options, entryValue);
+      } else {
+        promise = entry.value.response;
+      }
+    }
   
     return promise;
   }
