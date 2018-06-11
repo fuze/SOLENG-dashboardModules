@@ -63,7 +63,7 @@ class EasyRequestWrapper {
   }
 
   JSON(options) {
-    const entry = cache.get(options.url);
+    const entry = this[cacheImplementation].get(options.url);
     let promise;
     if (!entry) {
       console.log('No entry!');
