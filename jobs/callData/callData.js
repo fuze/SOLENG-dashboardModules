@@ -222,8 +222,8 @@ module.exports = {
           const response = await request.JSON(options);
 
           // if the results are shorter than the max, there are no more results to grab
+          console.log('length');
           console.log(response.calls.length);
-          console.log(response);
           if (response.calls.length < max) {  
             if (typeof first != 'undefined') {
               // if we specified a first element, we will need to remove it from our results
