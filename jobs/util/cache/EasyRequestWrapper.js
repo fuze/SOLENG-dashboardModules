@@ -81,6 +81,7 @@ class EasyRequestWrapper {
     let promise;
 
     if (this[isCached](options)) {
+      console.log('making the rwquest');
       promise = this[handleRequest](options);
     } else {
       const entry = this[cacheImplementation].get(options.url);
