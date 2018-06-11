@@ -44,7 +44,7 @@ class EasyRequestWrapper {
     this[newEntry] = (options) => {
       return {
         response: this[handleRequest](options),
-        timestamp: new Date().getTime(),
+        requestTimestamp: new Date().getTime(),
       };
     };
 
@@ -54,8 +54,14 @@ class EasyRequestWrapper {
     };
 
     this[updateEntry] = (url, result) => {
-      const validity = this[cacheImplementation].get(url).validity;
-      this[addValueToCache](url, result, validity);
+      const entry = this[cacheImplementation].get(url);
+      const validity = entry.validity;
+
+      const value = entry.value;
+      value.response = result;
+      value.responseTimestamp = new Date().getTime();
+
+      this[addValueToCache](url, value, validity);
     };
   }
 
