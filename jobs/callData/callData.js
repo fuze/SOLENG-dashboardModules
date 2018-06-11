@@ -219,6 +219,8 @@ module.exports = {
         };
 
         try {
+          console.log('Before the rquest');
+          console.log(request.JSON(options));
           const response = await request.JSON(options);
 
           // if the results are shorter than the max, there are no more results to grab
