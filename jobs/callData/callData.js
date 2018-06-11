@@ -135,6 +135,7 @@ module.exports = {
         // const userList = await getUserList(wardenToken);
 
         const callData = await getCallData(wardenToken);
+        console.log(callData);
 
         /*
         try {
