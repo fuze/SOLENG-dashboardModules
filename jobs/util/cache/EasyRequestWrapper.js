@@ -31,10 +31,12 @@ class EasyRequestWrapper {
       return new Promise((resolve, reject) => {
         entryValue.response
         .then((result) => {
+          console.log(result);
           this[updateEntry](options.url, result);
           resolve(result);
          })
         .catch((error) => {
+          console.log(error);
           this[updateEntry](options.url, error);
           reject(error);
         });
@@ -50,6 +52,9 @@ class EasyRequestWrapper {
 
     this[addValueToCache] = (url, value, validity = DEFAULT_TTL) => {
       const cacheEntry = new GenericCacheEntry(value, validity);
+      console.log('Setting cache entry');
+      console.log(url);
+      console.log(cacheEntry);
       this[cacheImplementation].set(url, cacheEntry);
     };
 
