@@ -1,8 +1,12 @@
+const { GenericCacheEntry } = require('../synapse/GenericCacheEntry');
+
 const easyRequest = Symbol('easyRequest');
 const cacheImplementation = Symbol('cacheImplementation');
 const handleRequest = Symbol('handleRequest');
 const updateCache = Symbol('updateCache');
 const newEntry = Symbol('newEntry');
+const addValueToCache = Symbol('addValueToCache');
+const updateEntry = Symbol('updateEntry');
 
 const DEFAULT_TTL = 1000 * 60 * 60 * 24; 
 
@@ -27,23 +31,31 @@ class EasyRequestWrapper {
       return new Promise((resolve, reject) => {
         entryValue.response
         .then((result) => {
-          this[cacheImplementation].set(options.url, result);
+          this[updateEntry](options.url, result);
           resolve(result);
          })
         .catch((error) => {
-          this[cacheImplementation].set(option.url, error);
+          this[updateEntry](options.url, error);
           reject(error);
         });
       });
-
     };
 
     this[newEntry] = (options) => {
       return {
         response: this[handleRequest](options),
         timestamp: new Date().getTime(),
-        ttl: options.ttl || DEFAULT_TTL,
       };
+    };
+
+    this[addValueToCache] = (url, value, validity = DEFAULT_TTL) => {
+      const cacheEntry = new GenericCacheEntry(value, validity);
+      this[cacheImplementation].set(url, cacheEntry);
+    };
+
+    this[updateEntry] = (url, result) => {
+      const validity = this[cacheImplementation].get(url).validity;
+      this[addValueToCache](url, result, validity);
     };
   }
 
@@ -51,17 +63,11 @@ class EasyRequestWrapper {
     const entry = cache.get(options.url);
     let promise;
     if (!entry) {
-      const entryValue = this[newEntry]();
-      this[cacheImplementation].set(options.url, entryValue);
+      const entryValue = this[newEntry](options);
+      this[addValueToCache](options.url, entryValue, options.ttl);
       promise = this[updateCache](options, entryValue);
     } else {
-      if (entry.timestamp > (new Date().getTime() - entry.ttl)) {
-        promise = entry.response;
-      } else {
-        const entryValue = this[entryValue]();
-        this[cacheImplementation].set(options.url, entryValue);
-        promise = this[updateCache](options, entryValue);
-      }
+      promise = entry.response;
     }
 
     return promise;
@@ -69,5 +75,6 @@ class EasyRequestWrapper {
 }
 
 module.exports = {
-  EasyRequestWrapper
+  EasyRequestWrapper, 
+  DEFAULT_TTL,
 }
