@@ -73,7 +73,7 @@ class EasyRequestWrapper {
       this[addValueToCache](options.url, entryValue, options.ttl);
       promise = this[updateCache](options, entryValue);
     } else {
-      promise = entry.response;
+      promise = entry.value.response;
       console.log('Entry located, no need to fetch again...');
     }
 
