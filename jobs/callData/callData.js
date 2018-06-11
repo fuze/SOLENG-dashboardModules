@@ -54,7 +54,10 @@ module.exports = {
      */
 
     const logger = dependencies.logger;
-    const request = dependencies.easyRequest;
+
+    const EasyRequestWrapper = require('../util/cache/EasyRequestWrapper').EasyRequestWrapper;
+    const InMemoryCache = require('../util/cache/InMemoryCache').InMemoryCache;
+    const request = new EasyRequestWrapper(dependencies.easyRequest, InMemoryCache.instance);
 
     /*
 
@@ -181,7 +184,7 @@ module.exports = {
       }
     }
 
-    function getCallData(wardenToken, callback, max, storedResults, first){
+    async function getCallData(wardenToken, callback, max, storedResults, first){
       try {
         
         if (!wardenToken) {
@@ -213,32 +216,34 @@ module.exports = {
           }
         };
 
-        request.JSON(options, (err, response) => {
-          if (err){
-            logger.error(err);
-            callback(null);
-          } else {
-            // if the results are shorter than the max, there are no more results to grab
-            if (response.calls.length < max) {  
-              if (typeof first != 'undefined') {
-                // if we specified a first element, we will need to remove it from our results
-                response.calls = response.calls.splice(1); 
-              }
-              
-              Array.prototype.push.apply(storedResults, response.calls);
-              callback({calls: storedResults});
-            } else {
-              if (typeof first != 'undefined') {
-                //if we specified a first element, we will need to remove it from our results
-                response.calls = response.calls.splice(1); 
-              }
-              Array.prototype.push.apply(storedResults, response.calls);
-              //get the linkedId of the last call we got to use as the 'first'
-              const lastId = response.calls[response.calls.length - 1].linkedId; 
-              getCallData(wardenToken, callback, max, storedResults, lastId);
+        try {
+          const response = await request.JSON(options);
+
+          // if the results are shorter than the max, there are no more results to grab
+          if (response.calls.length < max) {  
+            if (typeof first != 'undefined') {
+              // if we specified a first element, we will need to remove it from our results
+              response.calls = response.calls.splice(1); 
             }
+              
+            Array.prototype.push.apply(storedResults, response.calls);
+            callback({calls: storedResults});
+          } else {
+            if (typeof first != 'undefined') {
+              //if we specified a first element, we will need to remove it from our results
+              response.calls = response.calls.splice(1); 
+            }
+            Array.prototype.push.apply(storedResults, response.calls);
+            //get the linkedId of the last call we got to use as the 'first'
+            const lastId = response.calls[response.calls.length - 1].linkedId; 
+            getCallData(wardenToken, callback, max, storedResults, lastId);
           }
-        })
+
+        } catch (err) {
+          logger.error(err);
+          callback(null);
+        }
+
       } catch (err) {
         logger.error(err);
         callback(null);
