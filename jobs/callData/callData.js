@@ -244,6 +244,8 @@ module.exports = {
           }
 
         } catch (err) {
+          console.log('ERROR');
+          console.log(err);
           logger.error(err);
           callback(null);
         }
