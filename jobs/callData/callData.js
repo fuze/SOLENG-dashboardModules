@@ -133,6 +133,8 @@ module.exports = {
         const wardenToken = await wardenAuth(appToken, username, password);
 
         const userList = await getUserList(wardenToken);
+        console.log(userList);
+        /*
         const callData = await getCallData(wardenToken);
 
         try {
@@ -153,6 +155,7 @@ module.exports = {
           logger.error(err);
           jobCallback(err, null)
         }
+        */
 
       } catch (e) {
         logger.error(e);
