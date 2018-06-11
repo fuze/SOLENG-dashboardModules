@@ -175,7 +175,6 @@ module.exports = {
             headers : {
               Authorization: "Bearer " + wardenToken
             },
-            cached: false,
           };
 
           try {
