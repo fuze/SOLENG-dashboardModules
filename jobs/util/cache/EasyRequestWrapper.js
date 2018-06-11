@@ -81,10 +81,8 @@ class EasyRequestWrapper {
     let promise;
 
     if (!this[isCached](options)) {
-      console.log('not reusing requedst/response');
       promise = this[handleRequest](options);
     } else {
-      console.log('Reusing request/responses')
       const entry = this[cacheImplementation].get(options.url);
       if (!entry) {
         const entryValue = this[newEntry](options);
