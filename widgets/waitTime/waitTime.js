@@ -1,24 +1,22 @@
 widget = {
   //runs when we receive data from the job
   onData: function (el, data) {
-    $("a[href^='https://data.fuze.com/queues/']").each(function() {
-      this.href = 'https://data.fuze.com/queues/' + data.queue + '?after=now-0d&before=now';
-    })
+    $('a', el).attr('href', 'https://data.fuze.com/queues/' + data.queue + '/summary')
 
-  var waitTime = parseInt(data.response.longestholdtime)
-    //The parameters our job passed through are in the data object
-    //el is our widget element, so our actions should all be relative to that
-  if (data.title) {
-	  $('h2', el).text(data.title);
+    var waitTime = parseInt(data.response.longestholdtime)
+      //The parameters our job passed through are in the data object
+      //el is our widget element, so our actions should all be relative to that
+    if (data.title) {
+  	  $('h2', el).text(data.title);
+      }
+
+    if (waitTime > 0){
+      useTimer(increment, 1000) //since we dont get new data on hold time every second, let's fake it by incrementing
+    } else {
+      //if we have no wait time, clear the timer
+      var windowData = windowDataInit()
+      clearInterval(windowData.myInterval)
     }
-
-  if (waitTime > 0){
-    useTimer(increment, 1000) //since we dont get new data on hold time every second, let's fake it by incrementing
-  } else {
-    //if we have no wait time, clear the timer
-    var windowData = windowDataInit()
-    clearInterval(windowData.myInterval)
-  }
 
     function windowDataInit() { //returns this widget's window object. if one doent exist, it creates it first
       widgetUID = ($(el).parent().data("row") +  "-" + $(el).parent().data("col")) //creates a unique widget ID based on its grid coordinates
