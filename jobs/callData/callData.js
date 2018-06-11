@@ -132,12 +132,9 @@ module.exports = {
         const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
         const wardenToken = await wardenAuth(appToken, username, password);
 
-        // const userList = await getUserList(wardenToken);
-
+        const userList = await getUserList(wardenToken);
         const callData = await getCallData(wardenToken);
-        console.log(callData);
 
-        /*
         try {
           for (call in callData.calls){
             addNameToCall(callData.calls[call],userList.users)
@@ -156,7 +153,6 @@ module.exports = {
           logger.error(err);
           jobCallback(err, null)
         }
-        */
 
 
       } catch (e) {
