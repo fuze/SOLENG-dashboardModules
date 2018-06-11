@@ -80,7 +80,7 @@ class EasyRequestWrapper {
   JSON(options) {
     let promise;
 
-    if (this[isCached](options)) {
+    if (!this[isCached](options)) {
       console.log('not reusing requedst/response');
       promise = this[handleRequest](options);
     } else {
