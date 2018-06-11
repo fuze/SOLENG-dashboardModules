@@ -245,16 +245,6 @@ module.exports = {
           }
         }
       });
-      try {
-
-
-
-
-
-      } catch (err) {
-        logger.error(err);
-        callback(null);
-      }
     }
 
     function addNameToCall(call, listOfUsers){
