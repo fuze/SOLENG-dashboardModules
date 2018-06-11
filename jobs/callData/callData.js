@@ -174,7 +174,8 @@ module.exports = {
             url: usersEndpointURL,
             headers : {
               Authorization: "Bearer " + wardenToken
-            }
+            },
+            cached: false,
           };
 
           try {
