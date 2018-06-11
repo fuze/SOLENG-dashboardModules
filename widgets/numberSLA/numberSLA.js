@@ -16,12 +16,12 @@ widget = {
     $('.content', el).html(displayValue); //prints the table
 
     if (data.threshold && parseInt(displayValue)>=data.threshold) {
-      $(el).parent().css("background-color", "$brand-danger");
-      $('.content', el).css("color", "$brand-danger-content");
-      $('.widget-title', el).css("color", "$brand-danger-title");
+      $(el).parent().addClass("warning");
+      $(el).addClass("warning");
     } else {
-      $(el).parent().css("background-color", "$widget-background-color");
-      $('.content', el).css("color", "$widget-body-text-color");
+      if (data.tint){
+        $(el).parent().css("filter", "brightness("+ data.tint +")");
+      }
     }
 
   }

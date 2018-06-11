@@ -17,12 +17,12 @@ widget = {
     $('.content', el).html(displayValue); //prints the value
 
     if (data.threshold && parseInt(averageTime)>=data.threshold) {
-      $(el).parent().css("background-color", "#FF0000");
-      $('.content', el).css("color", "#181818");
-      $('.widget-title', el).css("color", "#454545");
+      $(el).parent().addClass("warning");
+      $(el).addClass("warning");
     } else {
-      $(el).parent().css("background-color", "#181818");
-      $('.content', el).css("color", "#9b9b9b");
+      if (data.tint){
+        $(el).parent().css("filter", "brightness("+ data.tint +")");
+      }
     }
     
     function convertTime(time) {
