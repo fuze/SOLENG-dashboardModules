@@ -159,9 +159,8 @@ module.exports = {
       }    
     }
 
-
     function getUserList(wardenToken) {
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         if (!wardenToken) {
           reject('Error: no warden token');
         } else {
