@@ -32,7 +32,6 @@ class EasyRequestWrapper {
         entryValue.response
         .then((result) => {
           this[updateEntry](options.url, result);
-          console.log('resolving result');
           resolve(result);
          })
         .catch((error) => {
@@ -61,19 +60,20 @@ class EasyRequestWrapper {
   }
 
   JSON(options) {
+    console.log(options.url);
     const entry = this[cacheImplementation].get(options.url);
     let promise;
     if (!entry) {
-      console.log('No entry, fetching data...');
       const entryValue = this[newEntry](options);
       this[addValueToCache](options.url, entryValue, options.ttl);
       promise = this[updateCache](options, entryValue);
     } else {
+      console.log(entry);
       promise = entry.value.response;
-      console.log('Entry located, no need to fetch again...');
     }
 
     console.log(promise);
+  
     return promise;
   }
 }
