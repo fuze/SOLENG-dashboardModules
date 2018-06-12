@@ -40,6 +40,8 @@ class CacheDestroyer {
       clearInterval(this[_purgeOperationID]);
       this[_purgeOperationID] = undefined;
     }
+
+    this[_schedulePurge]();
   }
 
   get purgeTimeout() {
