@@ -15,7 +15,7 @@ class CacheDestroyer {
       const toDelKeys = [];
       
       for (let [key] of this[_map]) {
-        if (!map.get(key).stillValid()) {
+        if (!this[_map].get(key).stillValid()) {
           toDelKeys.push(key);
         }
       }
