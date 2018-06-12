@@ -23,6 +23,10 @@ class InMemoryCache {
     return this[_singleton];
   }
 
+  getAll() {
+    return this[_cacheProp];
+  }
+
   get(key) {
     return this[_cacheProp].get(key);
   }
