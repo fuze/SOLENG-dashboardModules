@@ -23,7 +23,9 @@ class CacheDestroyer {
   }
 
   purge() {
+    console.log('purging...');
     const toDelKeys = this[_gatherKeysToDelete]();
+    console.log(toDelKeys);
     toDelKeys.forEach(keyToDel => this[_cache].delete(keyToDel));
   }
 }
