@@ -1,7 +1,8 @@
 const _cache = Symbol('cache');
 const _gatherKeysToDelete = Symbol('gatherKeysToDel');
 
-const purgeExecutionInterval = 1000 * 60 * 60;
+// const purgeExecutionInterval = 1000 * 60 * 60;
+const purgeExecutionInterval = 1000 * 60;
 
 class CacheDestroyer {
   constructor(cache) {
