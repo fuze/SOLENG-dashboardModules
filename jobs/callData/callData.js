@@ -54,7 +54,10 @@ module.exports = {
      */
 
     const logger = dependencies.logger;
-    const request = dependencies.easyRequest;
+
+    const EasyRequestWrapper = require('../util/cache/EasyRequestWrapper').EasyRequestWrapper;
+    const InMemoryCache = require('../util/cache/InMemoryCache').InMemoryCache;
+    const request = new EasyRequestWrapper(dependencies.easyRequest, InMemoryCache.instance);
 
     /*
 
@@ -129,104 +132,103 @@ module.exports = {
         const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
         const wardenToken = await wardenAuth(appToken, username, password);
 
-        getUserList(wardenToken, (userList) => {
-          getCallData(wardenToken, (callData) => {
-            try {
-              for (call in callData.calls){
-                addNameToCall(callData.calls[call],userList.users)
-              }
-              jobCallback(null, {title: config.widgetTitle, response: callData, pageSize: config.pageSize, sortValue: config.sortValue, ascending: config.ascending, displayColumns: config.displayColumns})
-            } catch (err) {
-              logger.error(err);
-              jobCallback(err, null)
-            }
+        const userList = await getUserList(wardenToken);
+        const callData = await getCallData(wardenToken);
+
+        try {
+          for (call in callData.calls){
+            addNameToCall(callData.calls[call],userList.users)
+          }
+          
+          jobCallback(null, {
+            title: config.widgetTitle,
+            response: callData,
+            pageSize: config.pageSize,
+            sortValue: config.sortValue,
+            ascending: config.ascending,
+            displayColumns: config.displayColumns
           });
-        });
+
+        } catch (err) {
+          logger.error(err);
+          jobCallback(err, null)
+        }
+
+
       } catch (e) {
         logger.error(e);
       }    
     }
 
-
-    function getUserList(wardenToken, callback){
-      try {
-
+    function getUserList(wardenToken) {
+      return new Promise(async (resolve, reject) => {
         if (!wardenToken) {
-          throw 'Error: no warden token';
-        }
-
-        const usersEndpointURL = "https://rest.data.fuze.com/users";
-        if (typeof config.department != 'undefined') {
-          usersEndpointURL += "?dept=" + config.department;
-        }
-
-        const options = {
-          url: usersEndpointURL,
-          headers : {
-            Authorization: "Bearer " + wardenToken
+          reject('Error: no warden token');
+        } else {
+          const usersEndpointURL = "https://rest.data.fuze.com/users";
+          if (typeof config.department != 'undefined') {
+            usersEndpointURL += "?dept=" + config.department;
           }
-        };
 
-        request.JSON(options, (err, response) => {
-          if (!err){
-            callback(response);
-          } else {
+          const options = {
+            url: usersEndpointURL,
+            headers : {
+              Authorization: "Bearer " + wardenToken
+            },
+          };
+
+          try {
+            resolve(await request.JSON(options));
+          } catch (err) {
             logger.error(err);
-            callback(null);
+            reject(err);
           }
-        });
-      } catch (err){
-        logger.error(err);
-        callback(null);
-      }
+        }
+      });
     }
 
-    function getCallData(wardenToken, callback, max, storedResults, first){
-      try {
-        
+    function getCallData(wardenToken, max, storedResults, first) {
+      return new Promise(async (resolve, reject) => {
         if (!wardenToken) {
-          throw 'Error: no warden token';
-        }
-
-        if (!max){
-          var max = 1000;
-        }
-
-        if (!storedResults) {
-          var storedResults = [];
-        }
-
-        let startTime = getStartTime(config.timeRange);
-        let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
-        if (typeof config.department != 'undefined') {
-          endpointURL += "&dept=" + config.department;
-        }
-
-        if (first) {
-          endpointURL += "&first=" + first;
-        }
-
-        let options = {
-          url: endpointURL,
-          headers : {
-            Authorization: "Bearer " + wardenToken
+          reject('Error: no warden token');
+        } else {
+          if (!max){
+            var max = 1000;
           }
-        };
 
-        request.JSON(options, (err, response) => {
-          if (err){
-            logger.error(err);
-            callback(null);
-          } else {
+          if (!storedResults) {
+            var storedResults = [];
+          }
+
+          let startTime = getStartTime(config.timeRange);
+          let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
+          if (typeof config.department != 'undefined') {
+            endpointURL += "&dept=" + config.department;
+          }
+  
+          if (first) {
+            endpointURL += "&first=" + first;
+          }
+  
+          let options = {
+            url: endpointURL,
+            headers : {
+              Authorization: "Bearer " + wardenToken
+            }
+          };
+
+          try {
+            const response = await request.JSON(options);
+  
             // if the results are shorter than the max, there are no more results to grab
             if (response.calls.length < max) {  
               if (typeof first != 'undefined') {
                 // if we specified a first element, we will need to remove it from our results
                 response.calls = response.calls.splice(1); 
               }
-              
+                
               Array.prototype.push.apply(storedResults, response.calls);
-              callback({calls: storedResults});
+              resolve({calls: storedResults});
             } else {
               if (typeof first != 'undefined') {
                 //if we specified a first element, we will need to remove it from our results
@@ -235,14 +237,15 @@ module.exports = {
               Array.prototype.push.apply(storedResults, response.calls);
               //get the linkedId of the last call we got to use as the 'first'
               const lastId = response.calls[response.calls.length - 1].linkedId; 
-              getCallData(wardenToken, callback, max, storedResults, lastId);
+              getCallData(wardenToken, max, storedResults, lastId);
             }
+  
+          } catch (err) {
+            logger.error(err);
+            reject(err);
           }
-        })
-      } catch (err) {
-        logger.error(err);
-        callback(null);
-      }
+        }
+      });
     }
 
     function addNameToCall(call, listOfUsers){

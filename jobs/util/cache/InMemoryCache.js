@@ -1,54 +1,39 @@
-const cacheProp = Symbol('cache');
-const validityProp = Symbol('validity');
-const gatherKeysToDelete = Symbol('gatherKeysToDel');
-const singleton = Symbol();
-const singletonEnforcer = Symbol();
+const _cacheProp = Symbol('cache');
+const _singleton = Symbol();
+const _singletonEnforcer = Symbol();
+const _cacheDestroyer = Symbol('cacheDestroyer');
 
-const purgeExecutionInterval = 1000 * 60 * 60;
-
+const { CacheDestroyer } = require('./CacheDestroyer');
+ 
 class InMemoryCache {
   constructor(enforcer) {
-    if (enforcer !== singletonEnforcer) {
+    if (enforcer !== _singletonEnforcer) {
       throw new Error('Cannot construct a singleton object');
     }
 
-    this[cacheProp] = new Map();
-
-    this[gatherKeysToDelete] = function() {
-      const toDelKeys = [];
-      for (let [key, value] of this[cacheProp]) {
-        if (!this[cacheProp].get(key).stillValid()) {
-          toDelKeys.push(key);
-        }
-      }
-      return toDelKeys;
-    }
-
-    setInterval(() => {
-      this.purge();
-    }, purgeExecutionInterval);
+    this[_cacheProp] = new Map();
   }
 
   static get instance() {
-    if (!this[singleton]) {
-      this[singleton] = new InMemoryCache(singletonEnforcer);
+    if (!this[_singleton]) {
+      this[_singleton] = new InMemoryCache(_singletonEnforcer);
+      this[_cacheDestroyer] = new CacheDestroyer(this[_singleton]);
     }
 
-    return this[singleton];
+    return this[_singleton];
+  }
+
+  getAll() {
+    return this[_cacheProp];
   }
 
   get(key) {
-    return this[cacheProp].get(key);
+    return this[_cacheProp].get(key);
   }
 
   set(key, value) {
     value.timestamp = new Date().getTime();
-    this[cacheProp].set(key, value);
-  }
-
-  purge() {
-    const toDelKeys = this[gatherKeysToDelete]();
-    toDelKeys.forEach(keyToDel => this[cacheProp].delete(keyToDel));
+    this[_cacheProp].set(key, value);
   }
 }
 
