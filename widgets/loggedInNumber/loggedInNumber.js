@@ -21,6 +21,8 @@ widget = {
       $(el).parent().addClass("warning");
       $(el).addClass("warning");
     } else {
+      $(el).parent().removeClass("warning");
+      $(el).removeClass("warning");
       if (data.tint){
         $(el).parent().css("filter", "brightness("+ data.tint +")");
       }
