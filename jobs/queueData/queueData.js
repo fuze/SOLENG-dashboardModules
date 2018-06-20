@@ -117,28 +117,53 @@ module.exports = {
       let username = config.globalAuth[authName].username
       let password = config.globalAuth[authName].password
       const appToken = config.globalAuth[authName].appToken
-
+      if (typeof config.queue === 'string'){ //alows for single queue configs to work
+        queueList = [config.queue]
+      } else {
+        queueList = config.queue
+      }
       try {
         const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
         const wardenToken = await wardenAuth(appToken, username, password);
 
-        getCallData(wardenToken, (callData) => {
-          try {
-            global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, callData)
-            let response = {title: config.widgetTitle, queue: config.queue, response: callData, threshold: config.threshold, variable: config.variable, };
-            jobCallback(null, response);
-          } catch (err) {
-            console.error('error:');
-            console.error(err);
-            jobCallback(err, null);
-          }
-        });
+        let fullResponse = await makeAllRequests(wardenToken, queueList)
+
+        global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, fullResponse)
+        let response = {title: config.widgetTitle, queue: config.queue, response: {queueCalls: fullResponse}, threshold: config.threshold, variable: config.variable, };
+        jobCallback(null, response);
+
       } catch (e) {
+        console.log(e)
         logger.error(e);
       }
     }
 
-    function getCallData (wardenToken, callback, max, storedResults, first){
+    function makeAllRequests(wardenToken, queueList){
+      return new Promise(async function(resolve, reject) {
+        const promises = [];
+        queueList.forEach((queue) => {
+          promises.push(callDataPromise(wardenToken, queue));
+        });
+        try {
+          const results = await Promise.all(promises);
+          resolve([].concat.apply([], results)); //combine results' array of arrays into a single array
+        } catch (e) {
+          reject(e);
+        }
+
+      });
+    }
+
+    function callDataPromise (wardenToken, queue){
+      return new Promise((resolve, reject) => {
+        getCallData (wardenToken, queue, (err, callData) => {
+          if (err){reject(err)}
+          else {resolve(callData)}
+        });
+      });
+    }
+
+    function getCallData (wardenToken, queueName, callback, max, storedResults, first){
       try {
         if (!wardenToken){
           throw 'Error: no warden token'
@@ -162,7 +187,7 @@ module.exports = {
         dependencies.easyRequest.JSON(options, (err, response) => {
           if (err){
             console.log(err)
-            callback(null)
+            callback(err, null)
           } else {
             try {
               if (response.queueCalls.length < max){  //if the results are shorter than the max, there are no more results to grab
@@ -170,24 +195,24 @@ module.exports = {
                   response.queueCalls = response.queueCalls.splice(1) //if we specified a first element, we will need to remove it from our results
                 }
                 Array.prototype.push.apply(storedResults, response.queueCalls)
-                callback({queueCalls: storedResults})
+                callback(null, storedResults)
               } else {
                 if (typeof first != 'undefined'){
                   response.queueCalls = response.queueCalls.splice(1) //if we specified a first element, we will need to remove it from our results
                 }
                 Array.prototype.push.apply(storedResults, response.queueCalls)
                 let lastId = response.queueCalls[response.queueCalls.length-1].id //get the id of the last call we got to use as the 'first'
-                getCallData(wardenToken, callback, max, storedResults, lastId)
+                getCallData(wardenToken, queueName, callback, max, storedResults, lastId)
               }
             } catch (err) {
               console.log(err)
-              callback(null)
+              callback(err, null)
             }
           }
         })
       } catch (err) {
         console.log(err)
-        callback(null)
+        callback(err, null)
       }
     }
 
