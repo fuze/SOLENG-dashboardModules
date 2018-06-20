@@ -111,8 +111,15 @@ module.exports = {
           maxWaitingArray.push(responseList[i].maxWaiting)
           memberList.push(responseList[i].members)
         }
-        combinedResponse.serviceLevelPerf = (combinedResponse.serviceLevelPerf/combinedResponse.numCompleted)
-        combinedResponse.avgHoldTime = (combinedResponse.avgHoldTime/combinedResponse.numCompleted)
+        
+        if (combinedResponse.numCompleted > 0){
+          combinedResponse.avgHoldTime = (combinedResponse.avgHoldTime/combinedResponse.numCompleted)
+          combinedResponse.serviceLevelPerf = (combinedResponse.serviceLevelPerf/combinedResponse.numCompleted)
+        } else {
+          combinedResponse.avgHoldTime = 0
+          combinedResponse.serviceLevelPerf = 0
+        }
+
         combinedResponse.maxWaiting = Math.max.apply(null, maxWaitingArray) //get largest value in array
 
         combinedResponse.members = combineMembers(memberList) //combine the queue memeber lists
@@ -160,14 +167,9 @@ module.exports = {
         pass: config.globalAuth[config.authName].password,
         tenant: config.tenant
       }
-      if (peerList.length > 0){ //todo: I dont think I need this check
         const peerOwners = await getPeerOwner(credentials, peerList);
         members.forEach(member => translate(member, peerOwners));
         return members
-
-      } else {
-        nullResponse("Error: Peer List is empty")
-      }
     }
 
     function translate(member, peerOwners) {
