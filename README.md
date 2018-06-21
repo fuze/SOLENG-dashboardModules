@@ -89,6 +89,22 @@ threshold: Theshold for widget warning (optional)
 widgetTitle: Title to display in the widget (optional)
 ```
 
+### Queue Average Talk Time
+Shows the average talk time for calls that were answered in a queue or group of queues for a given time range. Time is displayed in seconds, or minutes and seconds (if over 60). If a threshold has been set, the background of the widget turns red if the average talk time in seconds exceeds the threshold.
+
+#### Associated job:
+- queueData
+
+#### Config:
+```
+queue: (string or array of strings) key of the queue or queues you would like to monitor
+tenant: customer code in Portal
+authName: key from the globalAuthentication file of the credentials of the Portal User to be used for this request
+timeRange: allowed values are 'day', 'week', 'month', '7d', or '30d'. Defaults to 'day' (optional)
+threshold: Theshold for widget warning (optional)
+widgetTitle: Title to display in the widget (optional)
+```
+
 ### Calls Completed
 Shows the number of calls that have been answered by agents in a queue or group of queues.
 
