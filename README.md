@@ -310,6 +310,18 @@ A widget that displays the defined text.
 ```
 text: (string) Text to display
 ```
+
+### Image Widget:
+A widget that displays a local image file. Place the image you would like to display inside the "Assets" folder in the Dashboard Modules widget directory, and provide the name of the file in the config. Image scales to fit the size of the widget.
+
+#### Associated job:
+- returnsNull
+
+#### Config:
+```
+image: (string) Name of the file in the "Assets" folder to display
+backgroundColor: (string) (optional) HTML color value to set the background color of the widget
+```
 ## Customizing apperance
 
 ### Theme file
