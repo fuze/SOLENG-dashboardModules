@@ -126,10 +126,10 @@ module.exports = {
         const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
         const wardenToken = await wardenAuth(appToken, username, password);
 
-        let fullResponse = await makeAllRequests(wardenToken, queueList)
+        let fullResponse = {queueCalls: await makeAllRequests(wardenToken, queueList)}
 
         global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, fullResponse)
-        let response = {title: config.widgetTitle, queue: config.queue, response: {queueCalls: fullResponse}, threshold: config.threshold, variable: config.variable, };
+        let response = {title: config.widgetTitle, queue: config.queue, response: fullResponse, threshold: config.threshold, variable: config.variable, };
         jobCallback(null, response);
 
       } catch (e) {
