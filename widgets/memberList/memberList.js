@@ -36,7 +36,7 @@ widget = {
       if (value == 1){result = "Available"}
       else if (value == 2){result = "On a Call"}
       else if (value == 3){result = "Busy"}
-      else if (value == 4){result = "Invaild"}
+      else if (value == 4){result = "Invalid"}
       else if (value == 5){result = "Unavailable"}
       else if (value == 6 || value == 7){result = "Ringing"}
       else if (value == 8){result = "On Hold"}
