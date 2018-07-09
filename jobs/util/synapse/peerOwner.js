@@ -27,12 +27,13 @@ function getCachedPeerOwner(credentials, peers) {
 function getPeerOwner(credentials, peers) {
   return new Promise(async (resolve) => {
     const promises = peers.map(peer => getPeerInfo(credentials, peer));
+
     const results = await Promise.all(promises);
 
     const peerOwners = results.filter(result => typeof result !== 'error').map(result => {
       return {
-        "peer" : result.response.peers[0].peerName, 
-        "displayName" : result.response.peers[0].user.displayName,
+        "peer" : result.peers[0].peerName, 
+        "displayName" : result.peers[0].user.displayName,
         "originalPeerId" : result.originalPeerId
       }
     });
@@ -64,9 +65,10 @@ function getPeerInfo(credentials, peer) {
         response.on('error', (error) => resolve(error));
         response.on('end', (chunk) => {
           response = JSON.parse(str);
-          if (response.peers[0] && response.peers[0].user && response.peers[0].user.displayName) {
+          if (response.peers && response.peers[0] && response.peers[0].user && response.peers[0].user.displayName) {
+            const peers = response.peers;
             resolve({
-              response,
+              peers,
               originalPeerId
             });
           } else {
