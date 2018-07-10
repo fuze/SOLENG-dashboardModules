@@ -36,6 +36,8 @@ If you don't have a git setup in place you can drop an update script from [here]
 node update-wallboards.js
 ````
 
+Note : you will need to install git to be able to run the update-wallboards.js script. Check instructions [here](https://git-scm.com).
+
 ### Configure the sample dashboard
 To be able to use the sample dashboard that is included with this repository, the dashboard must be configured to work with your Fuze instance. Open the sample dashboard file inside of packages/fuze/dashboards that you wish to set up. In the 'config' section set the value of 'queue' and 'tenant' in 'common':
 ```
