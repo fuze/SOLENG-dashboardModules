@@ -18,8 +18,23 @@ atlasboard new mywallboard
 #Install fuze atlasboard modules
 cd mywallboard
 git init
-git submodule add git@github.com:fuze/SOLENG-dashboardModules.git packages/fuze
+git submodule add https://github.com/fuze/SOLENG-dashboardModules.git packages/fuze
 ```
+
+### Update Fuze Atlasboard Modules
+
+If you have a git setup in place, you can take advantage of submodule update feature and update the submodule with content from this remote repository like this:
+
+````
+cd mywallboard
+cd packages
+git submodule update --remote
+````
+
+If you don't have a git setup in place you can drop an update script from [here](https://gist.github.com/ifrias-fuze/6fc39b41a248caa89f415fa9c528cabc) on your wallboards root folder and run it with node like this: 
+````
+node update-wallboards.js
+````
 
 ### Configure the sample dashboard
 To be able to use the sample dashboard that is included with this repository, the dashboard must be configured to work with your Fuze instance. Open the sample dashboard file inside of packages/fuze/dashboards that you wish to set up. In the 'config' section set the value of 'queue' and 'tenant' in 'common':
