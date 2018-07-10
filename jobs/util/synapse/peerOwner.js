@@ -46,7 +46,7 @@ function getPeerInfo(credentials, peer) {
   return new Promise((resolve) => {
     const originalPeerId = peer;
 
-    //strip SIP identifier
+    // strip SIP identifier
     if (peer.substring(0,4) === 'SIP/') { 
       peer = peer.substring(4);
     }
