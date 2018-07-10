@@ -355,6 +355,16 @@ $widget-body-font-size = 2em //font size for text used in some widgets
 $brand-danger = #d04437 //color used by widgets when thresholds are exceeded
 ```
 
+#### Widget Threshold Theme
+To allow the widget threshold alerts to extend the threshold color all the way to the edge of the containing widget, add the following code to the bottom of your Theme file.
+
+```
+#widgets-container
+  ul
+    .warning
+      background-color $brand-danger
+```
+
 ### Tinting
 Some of the widgets we have created allow for an additional configuration option that allow the widgit color to be tinted, allowing it to stand out next to other widgets. For example, if your dashboard included a large grid of widgets and you wanted to make it easier to read across the rows of widgets, you could use tinting to make every other row slightly darker.
 
