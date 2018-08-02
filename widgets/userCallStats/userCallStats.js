@@ -114,10 +114,7 @@ widget = {
     }
     
     function getCallTime(call){
-      let startTime = new Date(call.startedAt)
-      let endTime = new Date(call.endedAt)
-      let calltime = Math.round((endTime - startTime) / 1000)
-      return (calltime)  //returns call durration in seconds 
+      return (call.duration / 1000)  //returns call durration in seconds 
     }
     
     function stripZeros(data){
