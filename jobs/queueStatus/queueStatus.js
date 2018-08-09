@@ -47,7 +47,7 @@ module.exports = {
           fullResponse.then(function(result){
             global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, result)
             jobCallback(null, {title: config.widgetTitle, variable: config.variable, tint: config.tint, queue: config.queue, response: result, threshold: config.threshold});
-          })
+          }).catch((err)=>{(nullResponse(err))})
         } catch (err) {
           nullResponse(err)
         }
@@ -65,7 +65,7 @@ module.exports = {
           promises.push(createRequestPromise(queue));
         });
         try {
-          const results = await Promise.all(promises);
+          const results = await Promise.all(promises).catch((err)=>{throw err});
           resolve(combineResponses(results));
         } catch (e) {
           reject(e);
@@ -180,7 +180,6 @@ module.exports = {
 
     function nullResponse (err){
       console.log("Job did not complete successfully")
-      if(err){console.log(err)}
       jobCallback(err, {title: config.widgetTitle, response: {'members': []}, threshold: config.threshold});
     }  
   }
