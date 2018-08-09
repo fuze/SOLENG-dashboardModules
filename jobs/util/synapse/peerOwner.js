@@ -3,7 +3,7 @@ const url = require('url');
 const { CacheOperator } = require('../CacheOperator');
 
 function getCachedPeerOwner(credentials, peers) {
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve, reject) => {
     const cache = CacheOperator.create();
 
     const cachedPeers =
@@ -16,34 +16,37 @@ function getCachedPeerOwner(credentials, peers) {
       peers.filter(
         peer => cache.getPeerInfo(peer) === undefined || !cache.getPeerInfo(peer).stillValid()
       );
-    
-    const apiResponses = await getPeerOwner(credentials, nonCachedPeers);
-    apiResponses.forEach(response => cache.setPeerInfo(response.originalPeerId, response));
-
-    resolve(cachedPeers.concat(apiResponses));
+    try{
+      const apiResponses = await getPeerOwner(credentials, nonCachedPeers).catch((err) => {throw err});
+      apiResponses.forEach(response => cache.setPeerInfo(response.originalPeerId, response));
+      resolve(cachedPeers.concat(apiResponses));
+    } catch (err) {return reject(err)}
   });
 }
 
 function getPeerOwner(credentials, peers) {
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve, reject) => {
     const promises = peers.map(peer => getPeerInfo(credentials, peer));
+    try {
+      const results = await Promise.all(promises).catch((err) => {
+        throw err
+      });
 
-    const results = await Promise.all(promises);
+      const peerOwners = results.filter(result => typeof result !== 'error').map(result => {
+        return {
+          "peer" : result.peers[0].peerName, 
+          "displayName" : result.peers[0].user.displayName,
+          "originalPeerId" : result.originalPeerId
+        }
+      });
 
-    const peerOwners = results.filter(result => typeof result !== 'error').map(result => {
-      return {
-        "peer" : result.peers[0].peerName, 
-        "displayName" : result.peers[0].user.displayName,
-        "originalPeerId" : result.originalPeerId
-      }
-    });
-
-    resolve(peerOwners);
+      resolve(peerOwners);
+    } catch (err) {return reject (err)}
   });
 }
 
 function getPeerInfo(credentials, peer) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const originalPeerId = peer;
 
     // strip SIP identifier
@@ -62,7 +65,7 @@ function getPeerInfo(credentials, peer) {
       if (response.statusCode === 200) {
         let str = '';
         response.on('data', (chunk) => str += chunk);
-        response.on('error', (error) => resolve(error));
+        response.on('error', (error) => reject(error));
         response.on('end', (chunk) => {
           response = JSON.parse(str);
           if (response.peers && response.peers[0] && response.peers[0].user && response.peers[0].user.displayName) {
@@ -72,20 +75,16 @@ function getPeerInfo(credentials, peer) {
               originalPeerId
             });
           } else {
-            resolve(badResponse());
+            reject("Not able to find peer names from https://synapse.thinkingphones.com/tpn-webapi-broker/services/peers");
           }
         });
       } else {
-        resolve(badResponse());
+        reject("Bad status code " + response.statusCode + " from https://synapse.thinkingphones.com/tpn-webapi-broker/services/peers");
       }
     });
 
     req.write('{"tenant": "' + credentials.tenant + '", "peerName": "' + peer + '"}');
     req.end();
-
-    function badResponse() {
-      return {'peers': [{'peerName': peer, 'user': {'displayName': peer}}]}
-    }
   });
 }
 

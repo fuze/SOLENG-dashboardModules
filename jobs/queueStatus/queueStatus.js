@@ -167,9 +167,15 @@ module.exports = {
         pass: config.globalAuth[config.authName].password,
         tenant: config.tenant
       }
-        const peerOwners = await getPeerOwner(credentials, peerList);
-        members.forEach(member => translate(member, peerOwners));
-        return members
+
+      const peerOwners = await getPeerOwner(credentials, peerList).catch((err)=>{
+        console.log("error getting peer names")
+        console.log(err)
+        return []
+      });
+      members.forEach(member => translate(member, peerOwners));
+      return members
+
     }
 
     function translate(member, peerOwners) {
