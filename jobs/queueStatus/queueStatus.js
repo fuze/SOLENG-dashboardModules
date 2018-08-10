@@ -2,7 +2,7 @@ module.exports = {
   onInit: function (config, dependencies) {
   },
 
-  onRun: function (config, dependencies, jobCallback) {
+  onRun: async function (config, dependencies, jobCallback) {
     var logger = dependencies.logger;
     //define the config values that effect the job
     //this is used to determine if we can reuse the response from another instance of this job running
@@ -44,10 +44,10 @@ module.exports = {
         }
         let fullResponse = makeAllRequests(queueList)
         try {
-          fullResponse.then(function(result){
+          await fullResponse.then(function(result){
             global.cachedWallboardResponses = responseCache.cacheResponse(jobConfig, global.cachedWallboardResponses, result)
             jobCallback(null, {title: config.widgetTitle, variable: config.variable, tint: config.tint, queue: config.queue, response: result, threshold: config.threshold});
-          }).catch((err)=>{(nullResponse(err))})
+          }).catch((err)=>{throw err})
         } catch (err) {
           nullResponse(err)
         }
