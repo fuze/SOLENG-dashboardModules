@@ -133,29 +133,23 @@ module.exports = {
         const wardenToken = await wardenAuth(appToken, username, password);
 
         const userList = await getUserList(wardenToken);
-        const callData = await getCallData(wardenToken);
-
-        try {
-          for (call in callData.calls){
-            addNameToCall(callData.calls[call],userList.users)
-          }
-          
-          jobCallback(null, {
-            title: config.widgetTitle,
-            response: callData,
-            pageSize: config.pageSize,
-            sortValue: config.sortValue,
-            ascending: config.ascending,
-            displayColumns: config.displayColumns
-          });
-
-        } catch (err) {
-          logger.error(err);
-          jobCallback(err, null)
+        const callData = await callDataPromise(wardenToken);
+      
+        for (call in callData.calls){
+          addNameToCall(callData.calls[call],userList.users)
         }
-
+        
+        jobCallback(null, {
+          title: config.widgetTitle,
+          response: callData,
+          pageSize: config.pageSize,
+          sortValue: config.sortValue,
+          ascending: config.ascending,
+          displayColumns: config.displayColumns
+        });
 
       } catch (e) {
+        jobCallback(e, null)
         logger.error(e);
       }    
     }
@@ -180,72 +174,82 @@ module.exports = {
           try {
             resolve(await request.JSON(options));
           } catch (err) {
-            logger.error(err);
             reject(err);
           }
         }
       });
     }
 
-    function getCallData(wardenToken, max, storedResults, first) {
+    function callDataPromise(wardenToken) {
       return new Promise(async (resolve, reject) => {
         if (!wardenToken) {
           reject('Error: no warden token');
         } else {
-          if (!max){
-            var max = 1000;
-          }
-
-          if (!storedResults) {
-            var storedResults = [];
-          }
-
-          let startTime = getStartTime(config.timeRange);
-          let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
-          if (typeof config.department != 'undefined') {
-            endpointURL += "&dept=" + config.department;
-          }
-  
-          if (first) {
-            endpointURL += "&first=" + first;
-          }
-  
-          let options = {
-            url: endpointURL,
-            headers : {
-              Authorization: "Bearer " + wardenToken
-            }
-          };
-
           try {
-            const response = await request.JSON(options);
-  
-            // if the results are shorter than the max, there are no more results to grab
-            if (response.calls.length < max) {  
-              if (typeof first != 'undefined') {
-                // if we specified a first element, we will need to remove it from our results
-                response.calls = response.calls.splice(1); 
-              }
-                
-              Array.prototype.push.apply(storedResults, response.calls);
-              resolve({calls: storedResults});
-            } else {
-              if (typeof first != 'undefined') {
-                //if we specified a first element, we will need to remove it from our results
-                response.calls = response.calls.splice(1); 
-              }
-              Array.prototype.push.apply(storedResults, response.calls);
-              //get the linkedId of the last call we got to use as the 'first'
-              const lastId = response.calls[response.calls.length - 1].linkedId; 
-              getCallData(wardenToken, max, storedResults, lastId);
-            }
-  
+            //let promise = await getCallData(wardenToken)
+            let promise = getCallData(wardenToken)
+            promise.then((callData)=>{
+              resolve(callData)
+            })
           } catch (err) {
-            logger.error(err);
-            reject(err);
+            reject (err)
           }
         }
-      });
+      })
+    }
+
+    async function getCallData(wardenToken, max, storedResults, first) {
+      if (!max){
+        var max = 1000;
+      }
+
+      if (!storedResults) {
+        var storedResults = [];
+      }
+
+      let startTime = getStartTime(config.timeRange);
+      let endpointURL = "https://Xrest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
+      if (typeof config.department != 'undefined') {
+        endpointURL += "&dept=" + config.department;
+      }
+
+      if (first) {
+        endpointURL += "&first=" + first;
+      }
+
+      let options = {
+        url: endpointURL,
+        headers : {
+          Authorization: "Bearer " + wardenToken
+        }
+      };
+
+      try {
+        const response = await request.JSON(options).catch((err)=>{throw err});
+        
+        // if the results are shorter than the max, there are no more results to grab
+        if (response.calls.length < max) {  
+          if (typeof first != 'undefined') {
+            // if we specified a first element, we will need to remove it from our results
+            response.calls = response.calls.splice(1); 
+          }
+            
+          Array.prototype.push.apply(storedResults, response.calls);
+          return ({calls: storedResults});
+        } else {
+          if (typeof first != 'undefined') {
+            //if we specified a first element, we will need to remove it from our results
+            response.calls = response.calls.splice(1); 
+          }
+          Array.prototype.push.apply(storedResults, response.calls);
+          //get the linkedId of the last call we got to use as the 'first'
+          const lastId = response.calls[response.calls.length - 1].linkedId; 
+          getCallData(wardenToken, max, storedResults, lastId);
+        }
+
+      } catch (err) {
+        throw (err);
+      }
     }
 
     function addNameToCall(call, listOfUsers){
@@ -266,6 +270,7 @@ module.exports = {
     }
     
     function getStartTime(range) {
+      if (typeof range === 'undefined'){range = 'day'}
       if (range &&
         range !== 'day' &&
         range !== 'week' &&
