@@ -208,7 +208,7 @@ module.exports = {
       }
 
       let startTime = getStartTime(config.timeRange);
-      let endpointURL = "https://Xrest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
+      let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
       if (typeof config.department != 'undefined') {
         endpointURL += "&dept=" + config.department;
       }
