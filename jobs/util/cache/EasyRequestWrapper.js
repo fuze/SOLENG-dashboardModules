@@ -23,6 +23,10 @@ class EasyRequestWrapper {
           if (err) {
             reject(err);
           } else {
+            console.log('response for request with options ');
+            console.log(options);
+            console.log('-----');
+            console.log(response);
             resolve(response);
           }
         });
@@ -90,9 +94,13 @@ class EasyRequestWrapper {
         const entryValue = this[createNewEntry](options);
         this[addValueToCache](options.url, entryValue, options.ttl);
         promise = this[updateCache](options, entryValue);
+        console.log('cache miss value');
+        console.log(promise);
       } else {
         console.log('Cache hit');
         promise = entry.value.response;
+        console.log('cache hit value');
+        console.log(promise);
       }
     }
 
