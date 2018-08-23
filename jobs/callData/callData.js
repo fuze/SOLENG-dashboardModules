@@ -194,7 +194,7 @@ module.exports = {
             let lastId = false
             let pageCount = 0;
             while (!gotAllPages) {
-              console.log(`Processing page ${pageCount}`);
+              console.log(`Job ${config.id} Processing page ${pageCount}`);
               let thisPage = await getCallData(wardenToken, maxResults, lastId)
               if (thisPage.length < maxResults) {
                 console.log(thisPage.length);
