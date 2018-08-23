@@ -27,6 +27,8 @@ class EasyRequestWrapper {
             console.log(options);
             console.log('-----');
             console.log(response);
+            console.log('length');
+            console.log(response.length);
             resolve(response);
           }
         });
