@@ -197,6 +197,7 @@ module.exports = {
               console.log(`Processing page ${pageCount}`);
               let thisPage = await getCallData(wardenToken, maxResults, lastId)
               if (thisPage.length < maxResults) {
+                console.log(thisPage.length);
                 gotAllPages = true;
               } else {
                 pageCount += 1;
