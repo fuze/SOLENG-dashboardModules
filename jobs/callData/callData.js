@@ -192,7 +192,7 @@ module.exports = {
             let thisPage = []
             let gotAllPages = false
             let lastId = false
-            const pageCount = 0;
+            let pageCount = 0;
             while (!gotAllPages) {
               console.log(`Processing page ${pageCount}`);
               let thisPage = await getCallData(wardenToken, maxResults, lastId)
