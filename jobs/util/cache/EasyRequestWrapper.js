@@ -4,7 +4,7 @@ const easyRequest = Symbol('easyRequest');
 const cacheImplementation = Symbol('cacheImplementation');
 const handleRequest = Symbol('handleRequest');
 const updateCache = Symbol('updateCache');
-const newEntry = Symbol('newEntry');
+const createNewEntry = Symbol('createNewEntry');
 const addValueToCache = Symbol('addValueToCache');
 const updateEntry = Symbol('updateEntry');
 const isCached = Symbol('isCached');
@@ -43,7 +43,7 @@ class EasyRequestWrapper {
       });
     };
 
-    this[newEntry] = (options) => {
+    this[createNewEntry] = (options) => {
       return {
         response: this[handleRequest](options),
         requestTimestamp: new Date().getTime(),
@@ -83,17 +83,21 @@ class EasyRequestWrapper {
     if (!this[isCached](options)) {
       promise = this[handleRequest](options);
     } else {
+      console.log(`Checking url ${options.url}`);
       const entry = this[cacheImplementation].get(options.url);
-      console.log(entry);
-      console.log(this[cacheImplementation]);
       if (!entry) {
-        const entryValue = this[newEntry](options);
+        console.log('Cache miss');
+        const entryValue = this[createNewEntry](options);
         this[addValueToCache](options.url, entryValue, options.ttl);
         promise = this[updateCache](options, entryValue);
       } else {
+        console.log('Cache hit');
         promise = entry.value.response;
       }
     }
+
+    console.log('Value');
+    console.log(promise);
   
     return promise;
   }
