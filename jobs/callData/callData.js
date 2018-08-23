@@ -134,6 +134,10 @@ module.exports = {
 
         const userList = await getUserList(wardenToken)
         const callData = await callDataPageGetter(wardenToken)
+
+        console.log(`total callData ${config.id}`);
+        console.log(callData);
+
         for (call in callData.calls){
           addNameToCall(callData.calls[call],userList.users)
         }
@@ -238,6 +242,7 @@ module.exports = {
       try {
         console.log(`Making a query to ${endpointURL}`);
         const response = await request.JSON(options);
+        console.log(response);
         return (response.calls);
       } catch (err) {
         throw (err);
