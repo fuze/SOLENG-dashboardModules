@@ -186,28 +186,28 @@ module.exports = {
           reject('Error: no warden token');
         } else {
           try {
-            console.log("starting over")
-//            const maxResults = 1000 //maximum number of results per page allowed by the API
-            const maxResults = 400 //maximum number of results per page allowed by the API
+//          const maxResults = 1000 //maximum number of results per page allowed by the API
+            const maxResults = 10 //maximum number of results per page allowed by the API
             let combinedResults = []
             let thisPage = []
             let gotAllPages = false
             let lastId = false
+            const pageCount = 0;
             while (!gotAllPages) {
-              console.log("should be false:" + gotAllPages)
+              console.log(`Processing page ${pageCount}`);
               let thisPage = await getCallData(wardenToken, maxResults, lastId)
               if (thisPage.length < maxResults){ // if the results are shorter than the max, there are no more results to grab
-                console.log("wrap this up")
-                gotAllPages = true
+                gotAllPages = true;
+              } else {
+                pageCount += 1;
               }
-              if (lastId) { // if we specified a first element, we will need to remove it from our results
-                thisPage = thisPage.splice(1); 
-              }
+
+              thisPage = lastId ? thisPage.splice(1) : thisPage;
+
               Array.prototype.push.apply(combinedResults, thisPage)
-              console.log(thisPage.length)
               lastId = thisPage[thisPage.length - 1].linkedId
-              console.log(gotAllPages)
             }
+
             resolve({calls: combinedResults})
           } catch (err) {
             reject (err)
@@ -233,10 +233,8 @@ module.exports = {
       };
 
       try {
-
+        console.log(`Making a query to ${endpointURL}`);
         const response = await request.JSON(options);
-        console.log(options.url)
-        console.log(response.calls.length)
         return (response.calls);
       } catch (err) {
         throw (err);
