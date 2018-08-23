@@ -196,18 +196,18 @@ module.exports = {
             while (!gotAllPages) {
               console.log(`Processing page ${pageCount}`);
               let thisPage = await getCallData(wardenToken, maxResults, lastId)
-              if (thisPage.length < maxResults){ // if the results are shorter than the max, there are no more results to grab
+              if (thisPage.length < maxResults) {
                 gotAllPages = true;
               } else {
                 pageCount += 1;
               }
 
-              if (lastId) {
-                thisPage = thisPage.splice(1);
-              }
+              const resultsToAdd = thisPage.filter(result => result.linkedId !== lastId);
+              Array.prototype.push.apply(combinedResults, resultsToAdd)
 
-              Array.prototype.push.apply(combinedResults, thisPage)
-              lastId = thisPage[thisPage.length - 1].linkedId
+              if (thisPage.length > 0) {
+                lastId = thisPage[thisPage.length - 1].linkedId ;
+              }
             }
 
             resolve({calls: combinedResults})
