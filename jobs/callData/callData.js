@@ -202,7 +202,9 @@ module.exports = {
                 pageCount += 1;
               }
 
-              thisPage = lastId ? thisPage.splice(1) : thisPage;
+              if (lastId) {
+                thisPage = thisPage.splice(1);
+              }
 
               Array.prototype.push.apply(combinedResults, thisPage)
               lastId = thisPage[thisPage.length - 1].linkedId
