@@ -84,6 +84,8 @@ class EasyRequestWrapper {
       promise = this[handleRequest](options);
     } else {
       const entry = this[cacheImplementation].get(options.url);
+      console.log(entry);
+      console.log(this[cacheImplementation]);
       if (!entry) {
         const entryValue = this[newEntry](options);
         this[addValueToCache](options.url, entryValue, options.ttl);
