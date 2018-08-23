@@ -135,7 +135,7 @@ module.exports = {
         const userList = await getUserList(wardenToken)
         const callData = await callDataPageGetter(wardenToken)
 
-        console.log(`total callData ${config.id}`);
+        console.log(`job ${config.id} total results:`);
         console.log(callData);
 
         for (call in callData.calls){
@@ -201,7 +201,6 @@ module.exports = {
               console.log(`Job ${config.id} Processing page ${pageCount}`);
               let thisPage = await getCallData(wardenToken, maxResults, lastId)
               if (thisPage.length < maxResults) {
-                console.log(thisPage.length);
                 gotAllPages = true;
               } else {
                 pageCount += 1;
@@ -240,9 +239,7 @@ module.exports = {
       };
 
       try {
-        console.log(`Making a query to ${endpointURL}`);
         const response = await request.JSON(options);
-        console.log(response);
         return (response.calls);
       } catch (err) {
         throw (err);

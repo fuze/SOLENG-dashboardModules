@@ -23,9 +23,10 @@ class EasyRequestWrapper {
           if (err) {
             reject(err);
           } else {
-            console.log('response for request with options ');
+            console.log('Request Options:');
             console.log(options);
             console.log('-----');
+            console.log('Response:')
             console.log(response);
             resolve(response);
           }
@@ -104,7 +105,7 @@ class EasyRequestWrapper {
       }
     }
 
-    console.log('Value');
+    console.log('Going to return...');
     console.log(promise);
   
     return promise;
