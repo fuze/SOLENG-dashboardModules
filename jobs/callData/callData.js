@@ -130,11 +130,11 @@ module.exports = {
 
       try {
         const wardenAuth = require("../util/auth/wardenNodeAuth.js").cachedWardenAuth;
-        const wardenToken = await wardenAuth(appToken, username, password);
+        const wardenToken = await wardenAuth(appToken, username, password).catch((err)=>{throw err});
 
-        const userList = await getUserList(wardenToken);
-        const callData = await callDataPromise(wardenToken);
-      
+        const userList = await getUserList(wardenToken)
+        const callData = await callDataPageGetter(wardenToken)
+
         for (call in callData.calls){
           addNameToCall(callData.calls[call],userList.users)
         }
@@ -172,7 +172,8 @@ module.exports = {
           };
 
           try {
-            resolve(await request.JSON(options));
+            let response = await request.JSON(options);
+            resolve(response);
           } catch (err) {
             reject(err);
           }
@@ -180,17 +181,35 @@ module.exports = {
       });
     }
 
-    function callDataPromise(wardenToken) {
+    function callDataPageGetter(wardenToken) {
       return new Promise(async (resolve, reject) => {
         if (!wardenToken) {
           reject('Error: no warden token');
         } else {
           try {
-            //let promise = await getCallData(wardenToken)
-            let promise = getCallData(wardenToken)
-            promise.then((callData)=>{
-              resolve(callData)
-            })
+            const maxResults = 1000 //maximum number of results per page allowed by the API
+            let combinedResults = []
+            let thisPage = []
+            let gotAllPages = false
+            let lastId = false
+            let pageCount = 0;
+            while (!gotAllPages) {
+              let thisPage = await getCallData(wardenToken, maxResults, lastId)
+              if (thisPage.length < maxResults) {
+                gotAllPages = true;
+              } else {
+                pageCount += 1;
+              }
+
+              const resultsToAdd = thisPage.filter(result => result.linkedId !== lastId);
+              Array.prototype.push.apply(combinedResults, resultsToAdd)
+
+              if (thisPage.length > 0) {
+                lastId = thisPage[thisPage.length - 1].linkedId ;
+              }
+            }
+
+            resolve({calls: combinedResults})
           } catch (err) {
             reject (err)
           }
@@ -198,55 +217,26 @@ module.exports = {
       })
     }
 
-    async function getCallData(wardenToken, max, storedResults, first) {
-      if (!max){
-        var max = 1000;
-      }
-
-      if (!storedResults) {
-        var storedResults = [];
-      }
-
+    async function getCallData(wardenToken, max, first) {
       let startTime = getStartTime(config.timeRange);
       let endpointURL = "https://rest.data.fuze.com/calls?after=" + startTime +"&tk=" + config.tenant + "&limit=" + max;
       if (typeof config.department != 'undefined') {
         endpointURL += "&dept=" + config.department;
       }
-
       if (first) {
         endpointURL += "&first=" + first;
       }
-
-      let options = {
+      const options = {
         url: endpointURL,
+        ttl: config.interval,
         headers : {
           Authorization: "Bearer " + wardenToken
         }
       };
 
       try {
-        const response = await request.JSON(options).catch((err)=>{throw err});
-        
-        // if the results are shorter than the max, there are no more results to grab
-        if (response.calls.length < max) {  
-          if (typeof first != 'undefined') {
-            // if we specified a first element, we will need to remove it from our results
-            response.calls = response.calls.splice(1); 
-          }
-            
-          Array.prototype.push.apply(storedResults, response.calls);
-          return ({calls: storedResults});
-        } else {
-          if (typeof first != 'undefined') {
-            //if we specified a first element, we will need to remove it from our results
-            response.calls = response.calls.splice(1); 
-          }
-          Array.prototype.push.apply(storedResults, response.calls);
-          //get the linkedId of the last call we got to use as the 'first'
-          const lastId = response.calls[response.calls.length - 1].linkedId; 
-          getCallData(wardenToken, max, storedResults, lastId);
-        }
-
+        const response = await request.JSON(options);
+        return (response.calls);
       } catch (err) {
         throw (err);
       }

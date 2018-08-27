@@ -4,10 +4,11 @@ const easyRequest = Symbol('easyRequest');
 const cacheImplementation = Symbol('cacheImplementation');
 const handleRequest = Symbol('handleRequest');
 const updateCache = Symbol('updateCache');
-const newEntry = Symbol('newEntry');
+const createNewEntry = Symbol('createNewEntry');
 const addValueToCache = Symbol('addValueToCache');
 const updateEntry = Symbol('updateEntry');
 const isCached = Symbol('isCached');
+const isValid = Symbol('isValid');
 
 const DEFAULT_TTL = 1000 * 60 * 60 * 24;
 const DEFAULT_CACHED = true;
@@ -43,7 +44,7 @@ class EasyRequestWrapper {
       });
     };
 
-    this[newEntry] = (options) => {
+    this[createNewEntry] = (options) => {
       return {
         response: this[handleRequest](options),
         requestTimestamp: new Date().getTime(),
@@ -83,16 +84,17 @@ class EasyRequestWrapper {
     if (!this[isCached](options)) {
       promise = this[handleRequest](options);
     } else {
+      console.log(`Checking url ${options.url}`);
       const entry = this[cacheImplementation].get(options.url);
-      if (!entry) {
-        const entryValue = this[newEntry](options);
+      if (!entry || !entry.stillValid()) {
+        const entryValue = this[createNewEntry](options);
         this[addValueToCache](options.url, entryValue, options.ttl);
         promise = this[updateCache](options, entryValue);
+
       } else {
         promise = entry.value.response;
       }
     }
-  
     return promise;
   }
 }
