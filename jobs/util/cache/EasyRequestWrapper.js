@@ -98,6 +98,18 @@ class EasyRequestWrapper {
         console.log('cache miss value');
         console.log(promise);
       } else {
+
+        // TODO:
+        // pseudo-code
+        // the isValid checks if the entry is within the ttl. Each entry has a response and a requestTimestamp you can use
+        // if (this[cacheImplementation].isValid(entry))
+        // {
+        //  promise = entry.value.response
+        // } else {
+        // This is a new method to remove the element from the cache. only happens if the value to return is not valid
+        //  this[cacheImplementation].deleteFromCache(entry.value);
+        // }
+
         console.log('Cache hit');
         promise = entry.value.response;
         console.log('cache hit value');
