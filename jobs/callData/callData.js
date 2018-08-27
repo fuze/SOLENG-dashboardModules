@@ -135,9 +135,6 @@ module.exports = {
         const userList = await getUserList(wardenToken)
         const callData = await callDataPageGetter(wardenToken)
 
-        console.log(`job ${config.id} total results:`);
-        console.log(callData);
-
         for (call in callData.calls){
           addNameToCall(callData.calls[call],userList.users)
         }
@@ -190,15 +187,13 @@ module.exports = {
           reject('Error: no warden token');
         } else {
           try {
-//          const maxResults = 1000 //maximum number of results per page allowed by the API
-            const maxResults = 10 //maximum number of results per page allowed by the API
+            const maxResults = 1000 //maximum number of results per page allowed by the API
             let combinedResults = []
             let thisPage = []
             let gotAllPages = false
             let lastId = false
             let pageCount = 0;
             while (!gotAllPages) {
-              console.log(`Job ${config.id} Processing page ${pageCount}`);
               let thisPage = await getCallData(wardenToken, maxResults, lastId)
               if (thisPage.length < maxResults) {
                 gotAllPages = true;
@@ -233,6 +228,7 @@ module.exports = {
       }
       const options = {
         url: endpointURL,
+        ttl: config.interval,
         headers : {
           Authorization: "Bearer " + wardenToken
         }
