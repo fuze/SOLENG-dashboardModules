@@ -102,7 +102,7 @@ class EasyRequestWrapper {
         // TODO:
         // pseudo-code
         // the isValid checks if the entry is within the ttl. Each entry has a response and a requestTimestamp you can use
-        // if (this[cacheImplementation].isValid(entry))
+        // if (entry.stillValid())
         // {
         //  promise = entry.value.response
         // } else {
