@@ -251,7 +251,7 @@ module.exports = {
         }
       }
       if (typeof call.from.userId == 'string') {
-        const userObject = listOfUsers.find(user => user.userId == call.to.userId);
+        const userObject = listOfUsers.find(user => user.userId == call.from.userId);
         if (typeof userObject != 'undefined') {
           call.from.firstName = userObject.firstName;
           call.from.lastName = userObject.lastName;
