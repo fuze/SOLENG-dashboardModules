@@ -84,7 +84,6 @@ class EasyRequestWrapper {
     if (!this[isCached](options)) {
       promise = this[handleRequest](options);
     } else {
-      console.log(`Checking url ${options.url}`);
       const entry = this[cacheImplementation].get(options.url);
       if (!entry || !entry.stillValid()) {
         const entryValue = this[createNewEntry](options);
