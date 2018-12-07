@@ -179,7 +179,7 @@ module.exports = {
     }
 
     function translate(member, peerOwners) {
-      const memberName = member.name.substring(4).toLowerCase();
+      const memberName = member.name.substring(4);
       const peerInfo = peerOwners.find(peerOwner => peerOwner.peer === memberName);
       member.name = peerInfo ? peerInfo.displayName : member.name;
     }
