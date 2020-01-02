@@ -75,7 +75,15 @@ function getPeerInfo(credentials, peer) {
               originalPeerId
             });
           } else {
-            reject("Not able to find peer names from https://synapse.thinkingphones.com/tpn-webapi-broker/services/peers");
+            console.log("Error: Unable to find name associated with peer '" + originalPeerId + "'. Please ensure peer exists in the portal. If they do not, reach out to Support to get the peer removed from the queue.")
+            resolve(
+              {
+                "peers" : [{
+                  "peerName" : originalPeerId, 
+                  "user": {"displayName" : originalPeerId}
+                  }],
+                "originalPeerId" : originalPeerId
+              });
           }
         });
       } else {
