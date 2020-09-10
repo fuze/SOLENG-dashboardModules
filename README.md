@@ -270,7 +270,6 @@ Displays the number of calls that have entered a queue within a given time range
 
 #### Associated job:
 - queueData
-- queueDataCombined
 
 #### Config:
 ```
@@ -286,7 +285,6 @@ Displays the number of completed queue calls that have a given disposition.
 
 #### Associated job:
 - queueData
-- queueDataCombined
 
 #### Config:
 ```
