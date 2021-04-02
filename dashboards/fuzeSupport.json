@@ -1,4 +1,5 @@
 {
+  "enabled": false,
 
   "title": "Queue Status: sample",
   "titleVisible": true,
