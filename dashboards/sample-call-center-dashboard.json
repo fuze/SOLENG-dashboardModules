@@ -1,4 +1,6 @@
 {
+  "IMPORTANT": "The 'enabled' setting needs to be set to true for this dashboard to be visible.",
+  "enabled": false,
 
   "title": "Queue Status: sample",
   "titleVisible": true,
