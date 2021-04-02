@@ -24,8 +24,8 @@
   "config": {
      "common": {
        "interval" : 10000,
-       "queue" : "thinkingphones-support-general-q",
-       "tenant" : "thinkingphones",
+       "queue" : "name-of-queue",
+       "tenant" : "tenant-code",
        "authName" : "portalUser"
      },
      "callsWaiting" : {
