@@ -3,7 +3,7 @@
   "title": "Queue Status: sample",
   "titleVisible": true,
 
-  "description": "A sample dashboard that shows the state of a queue and its agents",
+  "description": "Real Fuze Support Queue for dev work.",
 
   "layout": {
       "gridSize" : { "columns" : 13, "rows" : 16},
