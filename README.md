@@ -38,6 +38,9 @@ node update-wallboards.js
 
 Note : you will need to install git to be able to run the update-wallboards.js script. Check instructions [here](https://git-scm.com).
 
+### Add additional themes
+Atlasboard comes with a default theme that is a 'Dark Mode' style.  Included in the FuzeExtra directory is a 'light' theme that needs to be manually copied to the _wallboard_/themes/ sub-directory.  Then you will need to update the _wallboard_/config/themeing.js to point to this theme.  Change 'default' to 'light.  You can also modify or create your own theme to update the colors used, fonts or other UI characteristics that are configured via CSS.
+
 ### Configure the sample dashboard
 To be able to use the sample dashboard that is included with this repository, the dashboard must be configured to work with your Fuze instance. Open the sample dashboard file inside of packages/fuze/dashboards that you wish to set up. In the 'config' section set the value of 'queue' and 'tenant' in 'common':
 ```
