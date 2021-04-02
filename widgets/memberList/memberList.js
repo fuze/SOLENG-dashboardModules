@@ -52,10 +52,6 @@ widget = {
     function displayTable(values){
       var table = "<table class=\"memberList\" border=\"0\" cellpadding=\"5\" width=\"100%\">";
       for (row in values) {
-        if(config.showUnavailable !== undefined && !config.showUnavailable && memberStatus === 'Unavailable') {
-          console.log(`config.showUnavailable: {$config.showUnavailable} `);
-          continue;
-        }
         var memberStatus = values[row][1]
         var pausedStatus = values[row][2]
         if (memberStatus == "On a Call"){table += "<tr class=\"inUse\">"}
